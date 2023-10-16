@@ -4,6 +4,7 @@ import com.ali.mirsalari.wrench.entity.Order;
 import com.ali.mirsalari.wrench.entity.enumeration.OrderStatus;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidPriceException;
+import com.ali.mirsalari.wrench.exception.NotValidServiceException;
 import com.ali.mirsalari.wrench.exception.NotValidTimeException;
 import com.ali.mirsalari.wrench.repository.OrderRepository;
 import com.ali.mirsalari.wrench.service.OrderService;
@@ -25,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order save(Order order) throws NotValidPriceException, NotValidTimeException {
         if (order.getService().getServiceParent() == null) {
-            throw new NotValidPriceException("Invalid Service!");
+            throw new NotValidServiceException("Invalid Service!");
         }
         if (order.getSuggestedPrice() < order.getService().getBasePrice()) {
             throw new NotValidPriceException("Invalid price!");
