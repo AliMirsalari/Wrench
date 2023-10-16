@@ -1,6 +1,7 @@
 package com.ali.mirsalari.wrench.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,9 +27,11 @@ public abstract class User {
     @Column(name = "last_name")
     private String lastName;
 
+    @Pattern(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$")
     @Column(name = "email", unique = true)
     private String email;
 
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$!%^&+=])(?=\\S+$).{8,}$")
     @Column(name = "password")
     private String password;
 
@@ -63,4 +66,5 @@ public abstract class User {
         this.password = password;
         this.registerTime = registerTime;
     }
+
 }
