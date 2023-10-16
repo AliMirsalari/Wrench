@@ -25,8 +25,8 @@ public class BidServiceImpl implements BidService {
 
     @Override
     @Transactional
-    public Bid update(Bid bid) throws NotFoundException {
-        if (bid.getId() == null || bidRepository.findById(bid.getId()) == null) {
+    public Bid update(Bid bid) {
+        if (bid.getId() == null || bidRepository.findById(bid.getId()).isEmpty()) {
             throw new NotFoundException("Bid with id: " + bid.getId() + " is not found.");
         }
         return bidRepository.save(bid);
