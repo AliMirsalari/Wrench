@@ -25,8 +25,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment update(Comment comment) throws NotFoundException {
-        if (comment.getId() == null || commentRepository.findById(comment.getId()) == null) {
+    public Comment update(Comment comment) {
+        if (comment.getId() == null || commentRepository.findById(comment.getId()).isEmpty()) {
             throw new NotFoundException("Comment with id: " + comment.getId() + " is not found.");
         }
         return commentRepository.save(comment);
