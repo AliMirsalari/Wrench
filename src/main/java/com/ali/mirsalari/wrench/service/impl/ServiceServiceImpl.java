@@ -38,6 +38,11 @@ public class ServiceServiceImpl implements ServiceService {
     }
     @Override
     @Transactional
+    public Service uncheckedUpdate(Service service) {
+        return  serviceRepository.save(service);
+    }
+    @Override
+    @Transactional
     public void remove(Long id) {
         serviceRepository.deleteById(id);
     }
