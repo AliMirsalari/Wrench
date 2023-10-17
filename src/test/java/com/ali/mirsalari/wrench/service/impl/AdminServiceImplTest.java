@@ -1,7 +1,7 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Admin;
-import com.ali.mirsalari.wrench.exception.DuplicateEmailException;
+import com.ali.mirsalari.wrench.exception.DuplicateException;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
@@ -56,7 +56,7 @@ class AdminServiceImplTest {
         //Arrange
         when(adminRepository.findAdminByEmail(any())).thenReturn(Optional.ofNullable(admin));
         //Act and Assert
-        assertThrows(DuplicateEmailException.class,() ->{
+        assertThrows(DuplicateException.class,() ->{
             underTest.save(admin);
         });
     }
