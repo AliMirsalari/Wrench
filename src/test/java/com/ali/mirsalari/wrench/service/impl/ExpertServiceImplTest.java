@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +77,7 @@ class ExpertServiceImplTest {
         //Arrange
         when(expertRepository.findExpertByEmail(any())).thenReturn(Optional.ofNullable(expert));
         //Act and Assert
-        assertThrows(DuplicateEmailException.class,() ->{
+        assertThrows(DuplicateException.class,() ->{
             underTest.save(expert);
         });
     }
