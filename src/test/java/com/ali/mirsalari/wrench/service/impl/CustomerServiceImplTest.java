@@ -1,7 +1,8 @@
 package com.ali.mirsalari.wrench.service.impl;
 
+import com.ali.mirsalari.wrench.entity.Admin;
 import com.ali.mirsalari.wrench.entity.Customer;
-import com.ali.mirsalari.wrench.exception.DuplicateEmailException;
+import com.ali.mirsalari.wrench.exception.DuplicateException;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
@@ -59,7 +60,7 @@ class CustomerServiceImplTest {
         //Arrange
         when(customerRepository.findCustomerByEmail(any())).thenReturn(Optional.ofNullable(customer));
         //Act and Assert
-        assertThrows(DuplicateEmailException.class,() ->{
+        assertThrows(DuplicateException.class,() ->{
             underTest.save(customer);
         });
     }
@@ -83,11 +84,20 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    void itShouldUpdateAnCustomer() {
+    void itShouldUpdateCustomer() {
         //Arrange
         when(customerRepository.save(any())).thenReturn(customer);
         //Act
         Customer tempCustomer = underTest.update(customer);
+        //Assert
+        assertNotNull(tempCustomer);
+    }
+    @Test
+    void itShouldUpdateCustomerWithoutChecking() {
+        //Arrange
+        when(customerRepository.save(any())).thenReturn(customer);
+        //Act
+        Customer tempCustomer = underTest.uncheckedUpdate(customer);
         //Assert
         assertNotNull(tempCustomer);
     }
@@ -97,7 +107,7 @@ class CustomerServiceImplTest {
         //Act
         underTest.remove(1L);
         //Assert
-        verify(customerRepository, times(1)).deleteById(1L);
+        verify(customerRepository, times(1)).deleteById(any());
     }
     @Test
     void itShouldFindAnCustomerById() {
