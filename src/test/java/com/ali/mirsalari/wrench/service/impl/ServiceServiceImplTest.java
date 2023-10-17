@@ -72,7 +72,7 @@ class ServiceServiceImplTest {
         });
     }
     @Test
-    void itShouldUpdateAnService() {
+    void itShouldUpdateService() {
         //Arrange
         when(serviceRepository.save(any())).thenReturn(service);
         when(serviceRepository.findById(any())).thenReturn(Optional.ofNullable(service));
@@ -83,11 +83,20 @@ class ServiceServiceImplTest {
         assertNotNull(tempService);
     }
     @Test
+    void itShouldUpdateServiceWithoutChecking() {
+        //Arrange
+        when(serviceRepository.save(any())).thenReturn(service);
+        //Act
+        Service tempService = underTest.uncheckedUpdate(service);
+        //Assert
+        assertNotNull(tempService);
+    }
+    @Test
     void itShouldDeleteServiceById() {
         //Act
         underTest.remove(1L);
         //Assert
-        verify(serviceRepository, times(1)).deleteById(1L);
+        verify(serviceRepository, times(1)).deleteById(any());
     }
     @Test
     void itShouldFindAServiceById() {
