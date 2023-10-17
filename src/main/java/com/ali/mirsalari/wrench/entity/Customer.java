@@ -6,7 +6,9 @@ import lombok.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -16,10 +18,13 @@ import java.util.List;
 @Builder
 public class Customer extends User {
 
-    @OneToMany(mappedBy = "expert")
-    private List<Comment> comments = new ArrayList<>();
+    @OneToMany(mappedBy = "customer")
+    private Set<Comment> comments = new HashSet<>();
 
-    public Customer(String firstName, String lastName, String email, String password, Long credit, Instant registerTime, List<Comment> comments) {
+    @OneToMany(mappedBy = "customer")
+    private Set<Order> orders = new HashSet<>();
+
+    public Customer(String firstName, String lastName, String email, String password, Long credit, Instant registerTime, Set<Comment> comments) {
         super(firstName, lastName, email, password, credit, registerTime);
         this.comments = comments;
     }
