@@ -12,7 +12,6 @@ import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +25,7 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     @Transactional
-    public Expert save(Expert expert) throws DuplicateEmailException, NotValidPasswordException, NotValidEmailException {
+    public Expert save(Expert expert) throws DuplicateException, NotValidPasswordException, NotValidEmailException {
         validation(expert);
         return expertRepository.save(expert);
     }
@@ -36,6 +35,11 @@ public class ExpertServiceImpl implements ExpertService {
     public Expert update(Expert expert) throws NotFoundException, NotValidPasswordException, NotValidEmailException {
         validation(expert);
         return expertRepository.save(expert);
+    }
+    @Override
+    @Transactional
+    public Expert uncheckedUpdate(Expert expert) {
+        return  expertRepository.save(expert);
     }
 
     @Override
@@ -77,7 +81,7 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     @Transactional
-    public Expert approveExpert(Long id) throws NotFoundException, NotValidPasswordException, DuplicateEmailException, NotValidEmailException {
+    public Expert approveExpert(Long id) throws NotFoundException, NotValidPasswordException, DuplicateException, NotValidEmailException {
         Optional<Expert> optionalExpert = findById(id);
         if (optionalExpert.isEmpty()) {
             throw new NotFoundException("Expert is not found!");
@@ -89,7 +93,7 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     @Transactional
-    public Expert addSkill(Long skillId, Expert expert) throws NotFoundException, NotValidPasswordException, DuplicateEmailException, NotValidEmailException {
+    public Expert addSkill(Long skillId, Expert expert) throws NotFoundException, NotValidPasswordException, DuplicateException, NotValidEmailException {
         Optional<Service> skillOptional = serviceService.findById(skillId);
         if (skillOptional.isEmpty()) {
             throw new NotFoundException("Skill is not found!");
@@ -100,13 +104,13 @@ public class ExpertServiceImpl implements ExpertService {
 
         Service skill = skillOptional.get();
         expert.getSkills().add(skill);
-        return update(expert);
+        return expertRepository.save(expert);
     }
 
 
     @Override
     @Transactional
-    public Expert removeSkill(Long skillId, Expert expert) throws NotFoundException, NotValidPasswordException, DuplicateEmailException, NotValidEmailException {
+    public Expert removeSkill(Long skillId, Expert expert) throws NotFoundException, NotValidPasswordException, DuplicateException, NotValidEmailException {
         Optional<Service> skillOptional = serviceService.findById(skillId);
         if (skillOptional.isEmpty()) {
             throw new NotFoundException("Skill is not found!");
@@ -121,7 +125,7 @@ public class ExpertServiceImpl implements ExpertService {
             throw new NotFoundException("Skill is not found!");
         }
         expert.getSkills().remove(skill);
-        return update(expert);
+        return expertRepository.save(expert);
     }
 
     @Override
@@ -143,7 +147,7 @@ public class ExpertServiceImpl implements ExpertService {
     @Transactional
     public void validation(Expert expert) {
         if (findByEmail(expert.getEmail()).isPresent()) {
-            throw new DuplicateEmailException("Email already exists");
+            throw new DuplicateException("Email already exists");
         }
         if (!Validator.isValidPassword(expert.getPassword())) {
             throw new NotValidPasswordException("Password is not good!");
