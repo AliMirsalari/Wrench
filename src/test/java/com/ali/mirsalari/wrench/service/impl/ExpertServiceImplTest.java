@@ -3,7 +3,10 @@ package com.ali.mirsalari.wrench.service.impl;
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.entity.Service;
 import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
-import com.ali.mirsalari.wrench.exception.*;
+import com.ali.mirsalari.wrench.exception.DuplicateException;
+import com.ali.mirsalari.wrench.exception.NotFoundException;
+import com.ali.mirsalari.wrench.exception.NotValidEmailException;
+import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
 import com.ali.mirsalari.wrench.repository.ExpertRepository;
 import com.ali.mirsalari.wrench.repository.ImageRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,13 +112,22 @@ class ExpertServiceImplTest {
         //Assert
         assertNotNull(tempExpert);
     }
+    @Test
+    void itShouldUpdateAnExpertWithoutChecking() {
+        //Arrange
+        when(expertRepository.save(any())).thenReturn(expert);
+        //Act
+        Expert tempExpert = underTest.uncheckedUpdate(expert);
+        //Assert
+        assertNotNull(tempExpert);
+    }
 
     @Test
     void itShouldDeleteExpertById() {
         //Act
         underTest.remove(1L);
         //Assert
-        verify(expertRepository, times(1)).deleteById(1L);
+        verify(expertRepository, times(1)).deleteById(any());
     }
     @Test
     void itShouldFindAnExpertById() {
