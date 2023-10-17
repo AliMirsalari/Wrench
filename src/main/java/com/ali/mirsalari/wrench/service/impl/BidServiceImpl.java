@@ -46,7 +46,7 @@ public class BidServiceImpl implements BidService {
         if (bid.getStartTime().isBefore(Instant.now().minusSeconds(5))) {
             throw new NotValidTimeException("Bid's starting time cannot be in the past.");
         }
-        Bid tempBid = bidRepository.save(bid);
+        bidRepository.save(bid);
         if (bid.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS)){
             bid.getOrder().setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SELECTION);
             orderService.uncheckedUpdate(bid.getOrder());
