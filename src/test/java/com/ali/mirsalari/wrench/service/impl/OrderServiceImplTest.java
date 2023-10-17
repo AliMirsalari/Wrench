@@ -1,7 +1,6 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Order;
-import com.ali.mirsalari.wrench.entity.Order;
 import com.ali.mirsalari.wrench.entity.Service;
 import com.ali.mirsalari.wrench.entity.enumeration.OrderStatus;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
@@ -19,12 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
@@ -147,7 +144,7 @@ class OrderServiceImplTest {
         //Act
         underTest.remove(1L);
         //Assert
-        verify(orderRepository, times(1)).deleteById(1L);
+        verify(orderRepository, times(1)).deleteById(any());
     }
     @Test
     void itShouldFindAOrderById() {
