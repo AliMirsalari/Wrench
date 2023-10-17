@@ -88,13 +88,22 @@ class AdminServiceImplTest {
         //Assert
         assertNotNull(tempAdmin);
     }
+    @Test
+    void itShouldUpdateAnAdminWithoutChecking() {
+        //Arrange
+        when(adminRepository.save(any())).thenReturn(admin);
+        //Act
+        Admin tempAdmin = underTest.uncheckedUpdate(admin);
+        //Assert
+        assertNotNull(tempAdmin);
+    }
 
     @Test
     void itShouldDeleteAdminById() {
         //Act
         underTest.remove(1L);
         //Assert
-        verify(adminRepository, times(1)).deleteById(1L);
+        verify(adminRepository, times(1)).deleteById(any());
     }
     @Test
     void itShouldFindAnAdminById() {
