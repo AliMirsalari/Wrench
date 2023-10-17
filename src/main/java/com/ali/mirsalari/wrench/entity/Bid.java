@@ -34,14 +34,22 @@ public class Bid {
     private Instant duration;
 
     @ManyToOne
+    @JoinColumn(name = "expert_id")
+    private Expert expert;
+
+    @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
 
-    public Bid(Instant bidTime, Long suggestedPrice, Instant startTime, Instant duration, Order order) {
+    @Column(name = "selection_date")
+    private Instant selectionDate;
+
+    public Bid(Instant bidTime, Long suggestedPrice, Instant startTime, Instant duration, Expert expert, Order order) {
         this.bidTime = bidTime;
         this.suggestedPrice = suggestedPrice;
         this.startTime = startTime;
         this.duration = duration;
+        this.expert = expert;
         this.order = order;
     }
 }
