@@ -3,10 +3,7 @@ package com.ali.mirsalari.wrench.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,7 +34,9 @@ public class Service {
     @OneToMany(mappedBy = "serviceParent")
     private Set<Service> subServices = new HashSet<>();
 
-    @ManyToMany(mappedBy = "skills")
+    @ManyToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "skills")
     private List <Expert> experts = new ArrayList<>();
 
     public Service(String name, Long basePrice, String description, Service serviceParent, List<Expert> experts) {
@@ -68,5 +67,17 @@ public class Service {
                 ", description='" + description + '\'' +
                 ", serviceParent=" + serviceParent +
                 '}';
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Service service = (Service) o;
+        return Objects.equals(id, service.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
