@@ -1,7 +1,7 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Customer;
-import com.ali.mirsalari.wrench.exception.DuplicateEmailException;
+import com.ali.mirsalari.wrench.exception.DuplicateException;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
@@ -21,7 +21,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public Customer save(Customer customer) throws DuplicateEmailException, NotValidPasswordException, NotValidEmailException {
+    public Customer save(Customer customer) throws DuplicateException, NotValidPasswordException, NotValidEmailException {
         validation(customer);
         return customerRepository.save(customer);
     }
@@ -32,7 +32,11 @@ public class CustomerServiceImpl implements CustomerService {
         validation(customer);
         return customerRepository.save(customer);
     }
-
+    @Override
+    @Transactional
+    public Customer uncheckedUpdate(Customer customer) {
+        return  customerRepository.save(customer);
+    }
     @Override
     @Transactional
     public void remove(Long id) {
@@ -72,7 +76,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public void validation(Customer customer){
         if (findByEmail(customer.getEmail()).isPresent()) {
-            throw new DuplicateEmailException("Email already exists");
+            throw new DuplicateException("Email already exists");
         }
         if (!Validator.isValidPassword(customer.getPassword())) {
             throw new NotValidPasswordException("Password is not good!");
