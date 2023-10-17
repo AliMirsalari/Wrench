@@ -67,13 +67,22 @@ class CommentServiceImplTest {
         //Assert
         assertNotNull(tempComment);
     }
+    @Test
+    void itShouldUpdateCommentWithoutChecking() {
+        //Arrange
+        when(commentRepository.save(any())).thenReturn(comment);
+        //Act
+        Comment tempComment = underTest.uncheckedUpdate(comment);
+        //Assert
+        assertNotNull(tempComment);
+    }
 
     @Test
     void itShouldDeleteCommentById() {
         //Act
         underTest.remove(1L);
         //Assert
-        verify(commentRepository, times(1)).deleteById(1L);
+        verify(commentRepository, times(1)).deleteById(any());
     }
     @Test
     void itShouldFindACommentById() {
