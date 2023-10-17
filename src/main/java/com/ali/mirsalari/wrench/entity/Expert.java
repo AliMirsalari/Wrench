@@ -6,16 +6,16 @@ import com.ali.mirsalari.wrench.util.ImageLoader;
 import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.io.File;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -28,7 +28,7 @@ public class Expert extends User {
     @Column(name = "score")
     private int score;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "service_expert",
             joinColumns = @JoinColumn(name = "service_id"),
@@ -37,12 +37,16 @@ public class Expert extends User {
     private Set<Service> skills = new HashSet<>();
 
     @OneToMany(mappedBy = "expert")
+    @ToString.Exclude
     private List<Comment> comments = new ArrayList<>();
 
     @Lob
     @Column(name = "image")
     private byte[] imageData;
 
+    @OneToMany(mappedBy = "expert")
+    @ToString.Exclude
+    private Set<Bid> bids = new HashSet<>();
     public Expert(String firstName, String lastName, String email, String password, Long credit, Instant registerTime, int score, Set<Service> skills, List<Comment> comments, byte[] imageData) {
         super(firstName, lastName, email, password, credit, registerTime);
         this.expertStatus = ExpertStatus.NEW;
@@ -80,4 +84,14 @@ public class Expert extends User {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Expert{" +
+                ", firstName= " + super.getFirstName() +
+                ", lastName= " + super.getLastName() +
+                ", expertStatus=" + expertStatus +
+                ", score=" + score +
+                ", skills=" + skills +
+                '}';
+    }
 }
