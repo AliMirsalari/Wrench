@@ -1,7 +1,7 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Admin;
-import com.ali.mirsalari.wrench.exception.DuplicateEmailException;
+import com.ali.mirsalari.wrench.exception.DuplicateException;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
@@ -33,7 +33,11 @@ public class AdminServiceImpl implements AdminService {
         validation(admin);
         return adminRepository.save(admin);
     }
-
+    @Override
+    @Transactional
+    public Admin uncheckedUpdate(Admin admin) {
+        return  adminRepository.save(admin);
+    }
     @Override
     @Transactional
     public void remove(Long id) {
@@ -76,7 +80,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void validation(Admin admin){
         if (findByEmail(admin.getEmail()).isPresent()) {
-            throw new DuplicateEmailException("Email already exists");
+            throw new DuplicateException("Email already exists");
         }
         if (!Validator.isValidPassword(admin.getPassword())) {
             throw new NotValidPasswordException("Password is not good!");
