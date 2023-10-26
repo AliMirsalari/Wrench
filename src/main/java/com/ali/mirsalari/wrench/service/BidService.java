@@ -8,22 +8,47 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public interface BidService
-        extends CrudService<Bid,Long>{
+public interface BidService{
     @Transactional
-    List<Bid> findRelatedBidsOrderByPriceAsc(Order order);
+    Bid save(Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId);
+
+
     @Transactional
-    List<Bid> findRelatedBidsOrderByPriceDesc(Order order);
+    Bid update(Long id, Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId);
+
     @Transactional
-    List<Bid> findRelatedBidsOrderByScoreAsc(Order order);
+    Bid uncheckedUpdate(Bid bid);
+
     @Transactional
-    List<Bid> findRelatedBidsOrderByScoreDesc(Order order);
+    void remove(Long id);
+
     @Transactional
-    void selectBid(Bid bid);
+    Optional<Bid> findById(Long id);
+
     @Transactional
-    Optional<Bid> findSelectedBid(Order order);
+    List<Bid> findAll();
+
+
+    @Transactional
+    List<Bid> findRelatedBidsOrderByPriceAsc(Long orderId);
+
+    @Transactional
+    List<Bid> findRelatedBidsOrderByPriceDesc(Long orderId);
+
+    @Transactional
+    List<Bid> findRelatedBidsOrderByScoreAsc(Long orderId);
+
+    @Transactional
+    List<Bid> findRelatedBidsOrderByScoreDesc(Long orderId);
+
+    @Transactional
+    void selectBid(Long bidId);
+
+    @Transactional
+    Optional<Bid> findSelectedBid(Long orderId);
 }
