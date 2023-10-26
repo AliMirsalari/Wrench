@@ -22,8 +22,8 @@ public class Validator {
         if (!filename.toLowerCase().endsWith(".jpg")) {
             return false;
         }
-        long fileSize = file.length(); // File size in bytes
-        int maxSizeInKB = 300; // Maximum allowed size in KB
+        long fileSize = file.length();
+        int maxSizeInKB = 300;
         return fileSize <= (maxSizeInKB * 1024); // Convert maxSizeInKB to bytes
     }
 
