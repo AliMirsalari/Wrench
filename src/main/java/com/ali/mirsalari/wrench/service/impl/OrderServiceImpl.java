@@ -8,12 +8,16 @@ import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidPriceException;
 import com.ali.mirsalari.wrench.exception.NotValidServiceException;
 import com.ali.mirsalari.wrench.exception.NotValidTimeException;
+import com.ali.mirsalari.wrench.repository.BidRepository;
+import com.ali.mirsalari.wrench.repository.ExpertRepository;
 import com.ali.mirsalari.wrench.repository.OrderRepository;
+import com.ali.mirsalari.wrench.repository.ServiceRepository;
 import com.ali.mirsalari.wrench.service.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.EnumSet;
 import java.util.List;
@@ -21,12 +25,19 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
+    private final ExpertRepository expertRepository;
+    private final ServiceRepository serviceRepository;
+    private final BidRepository bidRepository;
 
     @Override
-    @Transactional
-    public Order save(Order order) {
+    public Order save(String description, Long suggestedPrice, String address, Long serviceId) {
+        com.ali.mirsalari.wrench.entity.Service service =
+                serviceRepository.findById(serviceId)
+                        .orElseThrow(()->new NotFoundException("Service is not found!"));
+        Order order = new Order(description, suggestedPrice, Instant.now(), address,service);
         if (order.getService().getServiceParent() == null) {
             throw new NotValidServiceException("Invalid Service!");
         }
@@ -42,11 +53,16 @@ public class OrderServiceImpl implements OrderService {
 
     }
     @Override
-    @Transactional
-    public Order update(Order order) {
-        if (order.getId() == null || orderRepository.findById(order.getId()).isEmpty()) {
-            throw new NotFoundException("Order with id: " + order.getId() + " is not found.");
-        }
+    public Order update(Long id, String description, Long suggestedPrice, String address, Long serviceId) {
+        com.ali.mirsalari.wrench.entity.Service service =
+                serviceRepository.findById(serviceId)
+                        .orElseThrow(()->new NotFoundException("Service is not found!"));
+        Order order = findById(id).orElseThrow(()->new NotFoundException("Order is not found!"));
+        order.setDescription(description);
+        order.setSuggestedPrice(suggestedPrice);
+        order.setAddress(address);
+        order.setService(service);
+        order.setDateOfExecution(Instant.now());
         if (order.getSuggestedPrice() < order.getService().getBasePrice()) {
             throw new NotValidPriceException("Invalid price!");
         }
@@ -56,18 +72,15 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
     @Override
-    @Transactional
     public Order uncheckedUpdate(Order order) {
         return  orderRepository.save(order);
     }
 
     @Override
-    @Transactional
     public void remove(Long id) {
         orderRepository.deleteById(id);
     }
     @Override
-    @Transactional
     public Optional<Order> findById(Long id) {
 
         return orderRepository.findById(id);
@@ -75,15 +88,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
     public List<Order> findAll() {
 
         return orderRepository.findAll();
     }
 
     @Override
-    @Transactional
-    public List<Order> findRelatedOrders(Expert expert) {
+    public List<Order> findRelatedOrders(Long expertId) {
+        Expert expert = expertRepository
+                .findById(expertId).orElseThrow(()->new NotFoundException("Expert is not found!"));
+
         EnumSet<OrderStatus> orderStatuses =
                 EnumSet.of(
                         OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS,
@@ -93,8 +107,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
-    public void changeOrderStatusToStarted(Order order, Bid bid) {
+    public void changeOrderStatusToStarted(Long orderId, Long bidId) {
+        Order order = findById(orderId).orElseThrow(()->new NotFoundException("Order is not found!"));
+        Bid bid = bidRepository.findById(bidId).orElseThrow(()->new NotFoundException("Bid is not found!"));
+
         if (order.getOrderStatus() != OrderStatus.WAITING_FOR_THE_EXPERT_TO_COME_TO_YOUR_PLACE){
             throw new IllegalStateException("You can not change the order status");
         }
@@ -106,12 +122,30 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
-    public void changeOrderStatusToDone(Order order) {
+    public void changeOrderStatusToDone(Long orderId, Long bidId) {
+        Order order = findById(orderId).orElseThrow(()->new NotFoundException("Order is not found!"));
+        Bid bid = bidRepository.findById(bidId).orElseThrow(()->new NotFoundException("Bid is not found!"));
+
         if (order.getOrderStatus() != OrderStatus.STARTED){
             throw new IllegalStateException("You can not change the order status");
         }
         order.setOrderStatus(OrderStatus.DONE);
+        uncheckedUpdate(order);
+        if (bid.getEndTime().isBefore(Instant.now())) {
+            int hoursBefore = (int) Duration.between(bid.getEndTime(), Instant.now()).toHours();
+            int score = bid.getExpert().getScore();
+            bid.getExpert().setScore((score-hoursBefore));
+            expertRepository.save(bid.getExpert());
+        }
+    }
+    @Override
+    public void changeOrderStatusToPaid(Long orderId) {
+        Order order = findById(orderId).orElseThrow(()->new NotFoundException("Order is not found!"));
+        if (order.getOrderStatus() != OrderStatus.DONE){
+            throw new IllegalStateException("You can not change the order status");
+        }
+        //TODO: open payment method
+        order.setOrderStatus(OrderStatus.PAID);
         uncheckedUpdate(order);
     }
 }

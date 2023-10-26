@@ -8,17 +8,26 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public interface OrderService
-        extends CrudService<Order, Long> {
+public interface OrderService{
+    Order save(String description, Long suggestedPrice, String address, Long serviceId);
+    Order update(Long id, String description, Long suggestedPrice, String address, Long serviceId);
+    Order uncheckedUpdate(Order order);
 
-    @Transactional
-    List<Order> findRelatedOrders(Expert expert);
+    void remove(Long id);
 
-    @Transactional
-    void changeOrderStatusToStarted(Order order, Bid bid);
+    Optional<Order> findById(Long id);
 
-    @Transactional
-    void changeOrderStatusToDone(Order order);
+    List<Order> findAll();
+
+    List<Order> findRelatedOrders(Long expertId);
+
+
+    void changeOrderStatusToStarted(Long orderId, Long bidId);
+
+    void changeOrderStatusToDone(Long orderId, Long bidId);
+
+    void changeOrderStatusToPaid(Long orderId);
 }
