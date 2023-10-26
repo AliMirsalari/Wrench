@@ -1,18 +1,18 @@
 package com.ali.mirsalari.wrench.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.time.Instant;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 @Table(name = "bids")
 public class Bid {
 
@@ -30,8 +30,8 @@ public class Bid {
     @Column(name = "start_time")
     private Instant startTime;
 
-    @Column(name = "duration")
-    private Instant duration;
+    @Column(name = "end_time")
+    private Instant endTime;
 
     @ManyToOne
     @JoinColumn(name = "expert_id")
@@ -44,12 +44,37 @@ public class Bid {
     @Column(name = "selection_date")
     private Instant selectionDate;
 
-    public Bid(Instant bidTime, Long suggestedPrice, Instant startTime, Instant duration, Expert expert, Order order) {
-        this.bidTime = bidTime;
+    public Bid(Long suggestedPrice, Instant startTime, Instant endTime, Expert expert, Order order) {
+        this.bidTime = Instant.now();
         this.suggestedPrice = suggestedPrice;
         this.startTime = startTime;
-        this.duration = duration;
+        this.endTime = endTime;
         this.expert = expert;
         this.order = order;
+    }
+    public Bid(Long id, Long suggestedPrice, Instant startTime, Instant endTime, Expert expert, Order order) {
+        this.id = id;
+        this.bidTime = Instant.now();
+        this.suggestedPrice = suggestedPrice;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.expert = expert;
+        this.order = order;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Bid bid = (Bid) o;
+        return getId() != null && Objects.equals(getId(), bid.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
