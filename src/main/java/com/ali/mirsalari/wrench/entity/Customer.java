@@ -3,33 +3,35 @@ package com.ali.mirsalari.wrench.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class Customer extends User {
 
     @OneToMany(mappedBy = "customer")
+    @ToString.Exclude
     private Set<Comment> comments = new HashSet<>();
 
     @OneToMany(mappedBy = "customer")
+    @ToString.Exclude
     private Set<Order> orders = new HashSet<>();
 
-    public Customer(String firstName, String lastName, String email, String password, Long credit, Instant registerTime, Set<Comment> comments) {
-        super(firstName, lastName, email, password, credit, registerTime);
+    public Customer(String firstName, String lastName, String email, String password, Long credit, Set<Comment> comments) {
+        super(firstName, lastName, email, password);
         this.comments = comments;
     }
 
-    public Customer(String firstName, String lastName, String email, String password, Instant registerTime) {
-        super(firstName, lastName, email, password, registerTime);
+    public Customer(String firstName, String lastName, String email, String password) {
+        super(firstName, lastName, email, password);
     }
+
 }

@@ -1,25 +1,25 @@
 package com.ali.mirsalari.wrench.entity;
 
 import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
+import com.ali.mirsalari.wrench.exception.FileException;
 import com.ali.mirsalari.wrench.exception.NotValidImageException;
 import com.ali.mirsalari.wrench.util.ImageLoader;
 import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.io.File;
-import java.time.Instant;
+import java.io.IOException;
 import java.util.*;
 
-@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
+@Slf4j
 public class Expert extends User {
     @Column(name = "expert_status")
     @Enumerated(EnumType.STRING)
@@ -31,9 +31,8 @@ public class Expert extends User {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "service_expert",
-            joinColumns = @JoinColumn(name = "service_id"),
-            inverseJoinColumns = @JoinColumn(name = "expert_id")
-    )
+            joinColumns = @JoinColumn(name = "expert_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id"))
     private Set<Service> skills = new HashSet<>();
 
     @OneToMany(mappedBy = "expert")
@@ -41,30 +40,23 @@ public class Expert extends User {
     private List<Comment> comments = new ArrayList<>();
 
     @Lob
+    @Basic(fetch = FetchType.EAGER)
     @Column(name = "image")
     private byte[] imageData;
 
     @OneToMany(mappedBy = "expert")
     @ToString.Exclude
     private Set<Bid> bids = new HashSet<>();
-    public Expert(String firstName, String lastName, String email, String password, Long credit, Instant registerTime, int score, Set<Service> skills, List<Comment> comments, byte[] imageData) {
-        super(firstName, lastName, email, password, credit, registerTime);
-        this.expertStatus = ExpertStatus.NEW;
-        this.score = 0;
-        this.skills = skills;
-        this.comments = comments;
-        this.imageData = imageData;
-    }
-    public Expert(Long id, String firstName, String lastName, String email, String password, Instant registerTime, String imageAddress) {
-        super(id, firstName, lastName, email, password, registerTime);
+    public Expert(Long id, String firstName, String lastName, String email, String password, String imageAddress) {
+        super(id, firstName, lastName, email, password);
         this.expertStatus = ExpertStatus.NEW;
         this.score = 0;
         setImageData(imageAddress);
 
     }
 
-    public Expert(String firstName, String lastName, String email, String password, Instant registerTime, String imageAddress) {
-        super(firstName, lastName, email, password, registerTime);
+    public Expert(String firstName, String lastName, String email, String password, String imageAddress) {
+        super(firstName, lastName, email, password);
         this.expertStatus = ExpertStatus.NEW;
         this.score = 0;
         setImageData(imageAddress);
@@ -79,8 +71,9 @@ public class Expert extends User {
             }else{
                 throw new NotValidImageException("Image is not valid");
             }
-        }catch (Exception e){
-            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            log.error("There is an error loading the image file!");
+            throw new FileException("There is an error loading the image file!");
         }
     }
 
@@ -94,4 +87,5 @@ public class Expert extends User {
                 ", skills=" + skills +
                 '}';
     }
+
 }

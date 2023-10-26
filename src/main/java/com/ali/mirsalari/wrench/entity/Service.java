@@ -10,7 +10,6 @@ import java.util.*;
 @Setter
 @Getter
 @Entity
-@Builder
 @Table(name = "services")
 public class Service {
     @Id
