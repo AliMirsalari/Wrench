@@ -8,76 +8,80 @@ import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
 import com.ali.mirsalari.wrench.repository.AdminRepository;
 import com.ali.mirsalari.wrench.service.AdminService;
 import com.ali.mirsalari.wrench.util.Validator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
 
 
     @Override
-    @Transactional
-    public Admin save(Admin admin){
-        validation(admin);
+    public Admin save(String firstName,
+                      String lastName,
+                      String email,
+                      String password){
+        Admin admin = new Admin(firstName, lastName, email, password);
         return adminRepository.save(admin);
     }
 
     @Override
-    @Transactional
-    public Admin update(Admin admin) {
-        validation(admin);
+    public Admin update(Long id,
+                        String firstName,
+                        String lastName,
+                        String email,
+                        String password) {
+        Admin admin = findById(id).orElseThrow(()->new NotFoundException("Admin is not found!"));
+        admin.setFirstName(firstName);
+        admin.setLastName(lastName);
+        admin.setEmail(email);
+        admin.setPassword(password);
         return adminRepository.save(admin);
     }
     @Override
-    @Transactional
     public Admin uncheckedUpdate(Admin admin) {
         return  adminRepository.save(admin);
     }
     @Override
-    @Transactional
     public void remove(Long id) {
         adminRepository.deleteById(id);
     }
 
     @Override
-    @Transactional
     public Optional<Admin> findById(Long id) {
         return adminRepository.findById(id);
     }
 
     @Override
-    @Transactional
     public Optional<Admin> findByEmail(String email) {
         return adminRepository.findAdminByEmail(email);
     }
 
 
     @Override
-    @Transactional
     public List<Admin> findAll() {
         return adminRepository.findAll();
     }
 
     @Override
-    @Transactional
-    public Admin changePassword(String newPassword, Admin admin){
-        if (admin.getId() == null || adminRepository.findById(admin.getId()).isEmpty()) {
-            throw new NotFoundException("Admin with id: " + admin.getId() + " is not found.");
-        }
-        if (!Validator.isValidPassword(newPassword)) {
-            throw new NotValidPasswordException("Password is not valid!");
+    public Admin changePassword(String newPassword, String oldPassword, Long userId) {
+        Admin admin = adminRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Admin with ID " + userId + " is not found."));
+        if (!Objects.equals(admin.getPassword(), oldPassword)) {
+            throw new NotValidPasswordException("The entered password is not the same as the password!");
         }
         admin.setPassword(newPassword);
-        return update(admin);
+        return uncheckedUpdate(admin);
     }
 
+
     @Override
-    @Transactional
     public void validation(Admin admin){
         if (findByEmail(admin.getEmail()).isPresent()) {
             throw new DuplicateException("Email already exists");
