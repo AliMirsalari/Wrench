@@ -14,7 +14,7 @@ public interface ServiceRepository
     @Query("SELECT s FROM Service s WHERE s.serviceParent IS NULL")
     List<Service> findAllServices ();
     @Query("SELECT s FROM Service s WHERE s.serviceParent IS NOT NULL")
-    List<Service> findAllSubServices ();
+    List<Service> findAllSubservices ();
     Optional<Service> findServiceByName(String name);
 
 }
