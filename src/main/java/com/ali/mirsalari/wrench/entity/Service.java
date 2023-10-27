@@ -31,7 +31,7 @@ public class Service {
     private Service serviceParent;
 
     @OneToMany(mappedBy = "serviceParent")
-    private Set<Service> subServices = new HashSet<>();
+    private Set<Service> Subservices = new HashSet<>();
 
     @ManyToMany(
             fetch = FetchType.EAGER,

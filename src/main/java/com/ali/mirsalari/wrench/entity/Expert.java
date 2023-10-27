@@ -8,11 +8,13 @@ import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.proxy.HibernateProxy;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -68,6 +70,7 @@ public class Expert extends User {
             File imageFile = new File(imageAddress);
             if (Validator.isValidImage(imageFile)){
                 this.imageData = ImageLoader.loadImageBytes(imageAddress);
+                imageFile.delete();
             }else{
                 throw new NotValidImageException("Image is not valid");
             }
