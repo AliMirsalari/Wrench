@@ -1,7 +1,6 @@
 package com.ali.mirsalari.wrench.service;
 
 import com.ali.mirsalari.wrench.entity.Expert;
-import com.ali.mirsalari.wrench.service.base.CrudService;
 import com.ali.mirsalari.wrench.service.base.BaseUserService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

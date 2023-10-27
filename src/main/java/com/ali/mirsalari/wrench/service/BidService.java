@@ -1,11 +1,7 @@
 package com.ali.mirsalari.wrench.service;
 
 import com.ali.mirsalari.wrench.entity.Bid;
-import com.ali.mirsalari.wrench.entity.Expert;
-import com.ali.mirsalari.wrench.entity.Order;
-import com.ali.mirsalari.wrench.service.base.CrudService;
 import jakarta.transaction.Transactional;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
