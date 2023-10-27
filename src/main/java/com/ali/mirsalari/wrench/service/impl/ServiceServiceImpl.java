@@ -19,7 +19,9 @@ public class ServiceServiceImpl implements ServiceService {
 
 
     @Override
-    public Service save(Service service) throws ServiceExistException {
+    public Service saveSubservice(String name, Long basePrice, String description, Long serviceParentId) {
+        Service parentService = findById(serviceParentId).orElse(null);
+        Service service = new Service(name, basePrice, description, parentService);
         if (findByName(service.getName()).isPresent()) {
             throw new ServiceExistException("Service " + service.getName() + " already exists");
         }
@@ -27,20 +29,38 @@ public class ServiceServiceImpl implements ServiceService {
 
     }
     @Override
-    public Service update(Service service) throws NotFoundException {
-        if (service.getId() == null || serviceRepository.findById(service.getId()).isEmpty()) {
-            throw new NotFoundException("Service with id: " + service.getId() + " is not found.");
-        }
+    public Service saveServices(String name){
+        Service service = new Service(name);
+        return serviceRepository.save(service);
+    }
+
+    @Override
+    public Service updateSubservice(Long id, String name, Long basePrice, String description, Long serviceParentId) {
+        Service service = findById(id).orElseThrow(() -> new NotFoundException("Service is not found!"));
+        Service parentService = findById(serviceParentId).orElse(null);
+        service.setName(name);
+        service.setBasePrice(basePrice);
+        service.setDescription(description);
+        service.setServiceParent(parentService);
         return serviceRepository.save(service);
     }
     @Override
-    public Service uncheckedUpdate(Service service) {
-        return  serviceRepository.save(service);
+    public Service updateService(Long id, String name) {
+        Service service = findById(id).orElseThrow(() -> new NotFoundException("Service is not found!"));
+        service.setName(name);
+        return serviceRepository.save(service);
     }
+
+    @Override
+    public Service uncheckedUpdate(Service service) {
+        return serviceRepository.save(service);
+    }
+
     @Override
     public void remove(Long id) {
         serviceRepository.deleteById(id);
     }
+
     @Override
     public Optional<Service> findById(Long id) {
         return serviceRepository.findById(id);
@@ -50,14 +70,17 @@ public class ServiceServiceImpl implements ServiceService {
     public List<Service> findAll() {
         return serviceRepository.findAll();
     }
+
     @Override
     public List<Service> findAllServices() {
         return serviceRepository.findAllServices();
     }
+
     @Override
-    public List<Service> findAllSubServices() {
-        return serviceRepository.findAllSubServices();
+    public List<Service> findAllSubservices() {
+        return serviceRepository.findAllSubservices();
     }
+
     @Override
     public Optional<Service> findByName(String name) {
         return serviceRepository.findServiceByName(name);
