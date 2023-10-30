@@ -18,7 +18,7 @@ public interface ServiceService {
 
     Service updateService(Long id, String name);
 
-    Service uncheckedUpdate(Service service);
+    Service updateWithEntity(Service service);
 
     void remove(Long id);
 

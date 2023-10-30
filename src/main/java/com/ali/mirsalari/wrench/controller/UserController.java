@@ -2,9 +2,9 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.service.UserService;
-import com.ali.mirsalari.wrench.service.dto.UserResponse;
-import com.ali.mirsalari.wrench.service.dto.UserSearchCriteria;
-import com.ali.mirsalari.wrench.service.mapper.UserResponseMapper;
+import com.ali.mirsalari.wrench.controller.dto.UserResponse;
+import com.ali.mirsalari.wrench.controller.dto.UserSearchCriteria;
+import com.ali.mirsalari.wrench.controller.mapper.UserResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -2,10 +2,10 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Customer;
 import com.ali.mirsalari.wrench.service.CustomerService;
-import com.ali.mirsalari.wrench.service.dto.ChangePasswordRequest;
-import com.ali.mirsalari.wrench.service.dto.CustomerResponse;
-import com.ali.mirsalari.wrench.service.dto.RegisterCustomerRequest;
-import com.ali.mirsalari.wrench.service.mapper.CustomerResponseMapper;
+import com.ali.mirsalari.wrench.controller.dto.ChangePasswordRequest;
+import com.ali.mirsalari.wrench.controller.dto.CustomerResponse;
+import com.ali.mirsalari.wrench.controller.dto.RegisterCustomerRequest;
+import com.ali.mirsalari.wrench.controller.mapper.CustomerResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,9 +42,9 @@ public class CustomerController {
     }
 
     @PutMapping(path = "{id}")
-    public ResponseEntity<?> updateCustomer(@Valid
+    public ResponseEntity<?> updateCustomer(
                                             @PathVariable("id") Long id,
-                                            @RequestBody RegisterCustomerRequest request) {
+                                            @Valid @RequestBody RegisterCustomerRequest request) {
             Customer customer = customerService.update(
                     id,
                     request.firstName(),
@@ -55,9 +55,9 @@ public class CustomerController {
     }
 
     @DeleteMapping(path = "{customerId}")
-    public HttpStatus deleteCustomer(@PathVariable("customerId") Long customerId) {
+    public ResponseEntity<?> deleteCustomer(@PathVariable("customerId") Long customerId) {
         customerService.remove(customerId);
-        return HttpStatus.OK;
+        return ResponseEntity.ok(HttpStatus.OK);
     }
     @GetMapping("/findById/{id}")
     public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
@@ -76,7 +76,7 @@ public class CustomerController {
     }
 
     @PutMapping("/changePassword/{userId}")
-    public ResponseEntity<?> changePassword(@PathVariable Long userId, @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> changePassword(@PathVariable Long userId, @Valid @RequestBody ChangePasswordRequest request) {
             Customer customer = customerService.changePassword(request.newPassword(), request.oldPassword(), userId);
             return ResponseEntity.ok(customerResponseMapper.toDto(customer));
     }

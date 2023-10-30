@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100">
+<div class="flex-column gap-3 w-40">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Order Id" id="order-id" aria-label="Order Id"
+               aria-describedby="basic-addon1" onkeyup="getPrice()">
+    </div>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Card Number" id="card-number" aria-label="Card Number"
+               aria-describedby="basic-addon1">
+    </div>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Price" id="price" aria-label="Price"
+               aria-describedby="basic-addon1" readonly>
+    </div>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="CVV2" id="cvv2" aria-label="CVV2"
+               aria-describedby="basic-addon1">
+    </div>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Year" id="year" aria-label="Year"
+               aria-describedby="basic-addon1">
+        <input type="text" class="form-control" placeholder="Month" id="month" aria-label="Month"
+               aria-describedby="basic-addon1">
+    </div>
+    <div class="input-group mb-3">
+        <input type="password" class="form-control" placeholder="Second Password" id="second-password" aria-label="Second Password"
+        aria-describedby="basic-addon1">
+    </div>
+    <div class="input-group mb-3">
+        <input type="number" class="form-control" placeholder="Captcha" id="captcha" aria-label="Captcha"
+               aria-describedby="basic-addon1">
+        <img id="captcha-img" class="w-50" onclick="getCaptcha()"/>
+    </div>
+    <div>
+        <button class="btn btn-success d-inline" onclick="sendPaymentData()" id="send-button" disabled>Send Payment</button>
+        <p id="demo" class="d-inline text-success fs-5" style="float: right"></p>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+
+<script>
+    function sendPaymentData() {
+        const orderId = $("#order-id").val();
+        const cardNumber = $("#card-number").val();
+        const price = $("#price").val();
+        const cvv2 = $("#cvv2").val();
+        const year = $("#year").val();
+        const month = $("#month").val();
+        const secondPassword = $("#second-password").val();
+        const captcha = $("#captcha").val();
+        const captchaId = localStorage.getItem('captchaId');
+        const paymentData = {
+            orderId,
+            cardNumber,
+            price,
+            cvv2,
+            year,
+            month,
+            secondPassword,
+            captcha,
+            captchaId
+        };
+
+        performPayment(paymentData);
+    }
+    function getCaptcha() {
+        fetch('http://localhost:8080/api/v1/order/captcha')
+            .then(response => response.json())
+            .then(json => {
+                localStorage.setItem("captchaId", json.id)
+                document.getElementById('captcha-img').setAttribute('src',json.base64)
+                setCaptchaTimer()
+            })
+    }
+
+    function getPrice(){
+        const orderId = $("#order-id").val();
+        fetch(`http://localhost:8080/api/v1/order/getOrderPrice?orderId=${orderId}`)
+            .then(response => {
+                if(response.status === 200){
+                    response.text()
+                        .then(text=>{
+                            document.getElementById('price').value = text;
+                            document.getElementById('send-button').disabled  = false;
+                        })
+                } else{
+                    document.getElementById('price').value = '';
+                    document.getElementById('send-button').disabled  = true;
+                }
+            })
+
+    }
+
+    const performPayment = async (formData) => {
+        try {
+            const response = await fetch('http://localhost:8080/api/v1/order/payOnline', {
+                method: 'POST',
+                body: JSON.stringify(formData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            alert(response.status);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+</script>
+</body>
+</html>

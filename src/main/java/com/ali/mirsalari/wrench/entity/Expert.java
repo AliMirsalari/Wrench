@@ -1,16 +1,10 @@
 package com.ali.mirsalari.wrench.entity;
 
 import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
-import com.ali.mirsalari.wrench.exception.FileException;
-import com.ali.mirsalari.wrench.exception.NotValidImageException;
-import com.ali.mirsalari.wrench.util.ImageLoader;
-import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,35 +43,24 @@ public class Expert extends User {
     @OneToMany(mappedBy = "expert")
     @ToString.Exclude
     private Set<Bid> bids = new HashSet<>();
-    public Expert(Long id, String firstName, String lastName, String email, String password, String imageAddress) {
+    public Expert(Long id, String firstName, String lastName, String email, String password, byte[] imageData) {
         super(id, firstName, lastName, email, password);
         this.expertStatus = ExpertStatus.NEW;
         this.score = 0;
-        setImageData(imageAddress);
+        this.imageData = imageData;
 
     }
 
-    public Expert(String firstName, String lastName, String email, String password, String imageAddress) {
+    public Expert(String firstName, String lastName, String email, String password, byte[] imageData) {
         super(firstName, lastName, email, password);
         this.expertStatus = ExpertStatus.NEW;
         this.score = 0;
-        setImageData(imageAddress);
+        this.imageData = imageData;
 
     }
 
-    public void setImageData(String imageAddress) {
-        try {
-            File imageFile = new File(imageAddress);
-            if (Validator.isValidImage(imageFile)){
-                this.imageData = ImageLoader.loadImageBytes(imageAddress);
-                imageFile.delete();
-            }else{
-                throw new NotValidImageException("Image is not valid");
-            }
-        } catch (IOException e) {
-            log.error("There is an error loading the image file!");
-            throw new FileException("There is an error loading the image file!");
-        }
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 
     @Override

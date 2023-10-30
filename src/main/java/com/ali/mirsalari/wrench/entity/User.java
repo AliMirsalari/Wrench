@@ -31,7 +31,6 @@ public class User {
     private String lastName;
 
     @Email
-    @Pattern(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$")
     @Column(name = "email", unique = true)
     private String email;
 

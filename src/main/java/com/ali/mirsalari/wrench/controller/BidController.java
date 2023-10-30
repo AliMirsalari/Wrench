@@ -2,9 +2,9 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Bid;
 import com.ali.mirsalari.wrench.service.BidService;
-import com.ali.mirsalari.wrench.service.dto.BidResponse;
-import com.ali.mirsalari.wrench.service.dto.RegisterBidRequest;
-import com.ali.mirsalari.wrench.service.mapper.BidResponseMapper;
+import com.ali.mirsalari.wrench.controller.dto.BidResponse;
+import com.ali.mirsalari.wrench.controller.dto.RegisterBidRequest;
+import com.ali.mirsalari.wrench.controller.mapper.BidResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,9 +42,9 @@ public class BidController {
     }
 
     @PutMapping(path = "{id}")
-    public ResponseEntity<?> updateBid(@Valid
+    public ResponseEntity<?> updateBid(
                                        @PathVariable("id") Long id,
-                                       @RequestBody RegisterBidRequest request) {
+                                       @Valid @RequestBody RegisterBidRequest request) {
             Bid bid = bidService.update(
                     id,
                     request.suggestedPrice(),
@@ -56,9 +56,9 @@ public class BidController {
             return ResponseEntity.ok(bidResponseMapper.toDto(bid));
     }
     @DeleteMapping(path = "{bidId}")
-    public HttpStatus deleteBid(@PathVariable("bidId") Long bidId) {
+    public ResponseEntity<?> deleteBid(@PathVariable("bidId") Long bidId) {
         bidService.remove(bidId);
-        return HttpStatus.OK;
+        return ResponseEntity.ok(HttpStatus.OK);
     }
     @GetMapping("/findById/{id}")
     public ResponseEntity<BidResponse> findById(@PathVariable Long id) {

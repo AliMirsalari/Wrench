@@ -77,7 +77,7 @@ public class BidServiceImpl implements BidService {
         ));
     }
     @Override
-    public Bid uncheckedUpdate(Bid bid) {
+    public Bid updateWithEntity(Bid bid) {
         return bidRepository.save(bid);
     }
 
@@ -125,7 +125,7 @@ public class BidServiceImpl implements BidService {
             throw new DuplicateException("You already have chosen a bid!");
         }
         bid.setSelectionDate(Instant.now());
-        uncheckedUpdate(bid);
+        updateWithEntity(bid);
         bid.getOrder().setOrderStatus(OrderStatus.WAITING_FOR_THE_EXPERT_TO_COME_TO_YOUR_PLACE);
         orderRepository.save(bid.getOrder());
     }

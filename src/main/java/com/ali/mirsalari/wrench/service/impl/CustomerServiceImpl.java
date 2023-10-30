@@ -1,13 +1,10 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Customer;
-import com.ali.mirsalari.wrench.exception.DuplicateException;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
-import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
 import com.ali.mirsalari.wrench.repository.CustomerRepository;
 import com.ali.mirsalari.wrench.service.CustomerService;
-import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +21,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer save(String firstName, String lastName, String email, String password) {
         Customer customer = new Customer(firstName, lastName, email, password);
-        validation(customer);
         return customerRepository.save(customer);
     }
 
@@ -38,7 +34,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.save(customer);
     }
     @Override
-    public Customer uncheckedUpdate(Customer customer) {
+    public Customer updateWithEntity(Customer customer) {
         return  customerRepository.save(customer);
     }
     @Override
@@ -68,18 +64,6 @@ public class CustomerServiceImpl implements CustomerService {
             throw new NotValidPasswordException("The entered password is not the same as the password!");
         }
         customer.setPassword(newPassword);
-        return uncheckedUpdate(customer);
-    }
-    @Override
-    public void validation(Customer customer){
-        if (findByEmail(customer.getEmail()).isPresent()) {
-            throw new DuplicateException("Email already exists");
-        }
-        if (!Validator.isValidPassword(customer.getPassword())) {
-            throw new NotValidPasswordException("Password is not good!");
-        }
-        if (!Validator.isValidEmail(customer.getEmail())) {
-            throw new NotValidEmailException("Email is not good!");
-        }
+        return updateWithEntity(customer);
     }
 }

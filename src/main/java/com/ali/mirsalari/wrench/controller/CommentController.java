@@ -2,9 +2,9 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Comment;
 import com.ali.mirsalari.wrench.service.CommentService;
-import com.ali.mirsalari.wrench.service.dto.CommentResponse;
-import com.ali.mirsalari.wrench.service.dto.RegisterCommentRequest;
-import com.ali.mirsalari.wrench.service.mapper.CommentResponseMapper;
+import com.ali.mirsalari.wrench.controller.dto.CommentResponse;
+import com.ali.mirsalari.wrench.controller.dto.RegisterCommentRequest;
+import com.ali.mirsalari.wrench.controller.mapper.CommentResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,30 +32,31 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<?> registerComment(@Valid @RequestBody RegisterCommentRequest request) {
-            Comment comment = commentService.save(request.rate(),
-                    request.verdict(),
-                    request.customerId(),
-                    request.expertId());
-            return ResponseEntity.ok(commentResponseMapper.toDto(comment));
+        Comment comment = commentService.save(request.rate(),
+                request.verdict(),
+                request.customerId(),
+                request.expertId());
+        return ResponseEntity.ok(commentResponseMapper.toDto(comment));
     }
 
     @PutMapping(path = "{id}")
-    public ResponseEntity<?> updateComment(@Valid
-                                       @PathVariable("id") Long id,
-                                       @RequestBody RegisterCommentRequest request) {
-            Comment comment = commentService.update(
-                    id,
-                    request.rate(),
-                    request.verdict(),
-                    request.customerId(),
-                    request.expertId()
-            );
-            return ResponseEntity.ok(commentResponseMapper.toDto(comment));
+    public ResponseEntity<?> updateComment(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody RegisterCommentRequest request) {
+        Comment comment = commentService.update(
+                id,
+                request.rate(),
+                request.verdict(),
+                request.customerId(),
+                request.expertId()
+        );
+        return ResponseEntity.ok(commentResponseMapper.toDto(comment));
     }
+
     @DeleteMapping(path = "{commentId}")
-    public HttpStatus deleteComment(@PathVariable("commentId") Long commentId) {
+    public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId) {
         commentService.remove(commentId);
-        return HttpStatus.OK;
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @GetMapping("/findById/{id}")

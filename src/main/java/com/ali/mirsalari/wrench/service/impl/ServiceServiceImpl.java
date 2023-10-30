@@ -2,7 +2,7 @@ package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Service;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
-import com.ali.mirsalari.wrench.exception.ServiceExistException;
+import com.ali.mirsalari.wrench.exception.ServiceAlreadyExistsException;
 import com.ali.mirsalari.wrench.repository.ServiceRepository;
 import com.ali.mirsalari.wrench.service.ServiceService;
 import jakarta.transaction.Transactional;
@@ -23,7 +23,7 @@ public class ServiceServiceImpl implements ServiceService {
         Service parentService = findById(serviceParentId).orElse(null);
         Service service = new Service(name, basePrice, description, parentService);
         if (findByName(service.getName()).isPresent()) {
-            throw new ServiceExistException("Service " + service.getName() + " already exists");
+            throw new ServiceAlreadyExistsException("Service " + service.getName() + " already exists");
         }
         return serviceRepository.save(service);
 
@@ -52,7 +52,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public Service uncheckedUpdate(Service service) {
+    public Service updateWithEntity(Service service) {
         return serviceRepository.save(service);
     }
 

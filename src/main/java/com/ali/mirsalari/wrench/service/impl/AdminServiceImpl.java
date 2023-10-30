@@ -1,13 +1,10 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Admin;
-import com.ali.mirsalari.wrench.exception.DuplicateException;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
-import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
 import com.ali.mirsalari.wrench.repository.AdminRepository;
 import com.ali.mirsalari.wrench.service.AdminService;
-import com.ali.mirsalari.wrench.util.Validator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,7 +42,7 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.save(admin);
     }
     @Override
-    public Admin uncheckedUpdate(Admin admin) {
+    public Admin updateWithEntity(Admin admin) {
         return  adminRepository.save(admin);
     }
     @Override
@@ -77,20 +74,6 @@ public class AdminServiceImpl implements AdminService {
             throw new NotValidPasswordException("The entered password is not the same as the password!");
         }
         admin.setPassword(newPassword);
-        return uncheckedUpdate(admin);
-    }
-
-
-    @Override
-    public void validation(Admin admin){
-        if (findByEmail(admin.getEmail()).isPresent()) {
-            throw new DuplicateException("Email already exists");
-        }
-        if (!Validator.isValidPassword(admin.getPassword())) {
-            throw new NotValidPasswordException("Password is not good!");
-        }
-        if (!Validator.isValidEmail(admin.getEmail())) {
-            throw new NotValidEmailException("Email is not good!");
-        }
+        return updateWithEntity(admin);
     }
 }

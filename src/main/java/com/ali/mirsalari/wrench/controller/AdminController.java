@@ -2,10 +2,10 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Admin;
 import com.ali.mirsalari.wrench.service.AdminService;
-import com.ali.mirsalari.wrench.service.dto.AdminResponse;
-import com.ali.mirsalari.wrench.service.dto.ChangePasswordRequest;
-import com.ali.mirsalari.wrench.service.dto.RegisterAdminRequest;
-import com.ali.mirsalari.wrench.service.mapper.AdminResponseMapper;
+import com.ali.mirsalari.wrench.controller.dto.AdminResponse;
+import com.ali.mirsalari.wrench.controller.dto.ChangePasswordRequest;
+import com.ali.mirsalari.wrench.controller.dto.RegisterAdminRequest;
+import com.ali.mirsalari.wrench.controller.mapper.AdminResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,15 +42,15 @@ public class AdminController {
     }
 
     @DeleteMapping(path = "{adminId}")
-    public HttpStatus deleteAdmin(@PathVariable("adminId") Long adminId) {
+    public ResponseEntity<?> deleteAdmin(@PathVariable("adminId") Long adminId) {
         adminService.remove(adminId);
-        return HttpStatus.OK;
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PutMapping(path = "{id}")
-    public ResponseEntity<?> updateAdmin(@Valid
+    public ResponseEntity<?> updateAdmin(
                                          @PathVariable("id") Long id,
-                                         @RequestBody RegisterAdminRequest request) {
+                                         @Valid @RequestBody RegisterAdminRequest request) {
             Admin admin = adminService.update(
                     id,
                     request.firstName(),
@@ -80,7 +80,7 @@ public class AdminController {
     }
 
     @PutMapping("/changePassword/{userId}")
-    public ResponseEntity<?> changePassword(@PathVariable Long userId, @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> changePassword(@PathVariable Long userId, @Valid @RequestBody ChangePasswordRequest request) {
             Admin admin = adminService.changePassword(request.newPassword(), request.oldPassword(), userId);
             return ResponseEntity.ok(adminResponseMapper.toDto(admin));
     }

@@ -8,9 +8,9 @@ import java.util.Optional;
 
 @Service
 public interface OrderService{
-    Order save(String description, Long suggestedPrice, String address, Long serviceId);
-    Order update(Long id, String description, Long suggestedPrice, String address, Long serviceId);
-    Order uncheckedUpdate(Order order);
+    Order save(String description, Long suggestedPrice, String address, Long serviceId, Long customerId);
+    Order update(Long id, String description, Long suggestedPrice, String address, Long serviceId, Long customerId);
+    Order updateWithEntity(Order order);
 
     void remove(Long id);
 
@@ -25,5 +25,9 @@ public interface OrderService{
 
     void changeOrderStatusToDone(Long orderId, Long bidId);
 
-    void changeOrderStatusToPaid(Long orderId);
+    void payWithCredit(Long orderId);
+
+    void payOnline(Long orderId, Long price);
+
+    Long getOrderPriceById(Long orderId);
 }

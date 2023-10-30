@@ -2,9 +2,9 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Service;
 import com.ali.mirsalari.wrench.service.ServiceService;
-import com.ali.mirsalari.wrench.service.dto.RegisterServiceRequest;
-import com.ali.mirsalari.wrench.service.dto.ServiceResponse;
-import com.ali.mirsalari.wrench.service.mapper.ServiceResponseMapper;
+import com.ali.mirsalari.wrench.controller.dto.RegisterServiceRequest;
+import com.ali.mirsalari.wrench.controller.dto.ServiceResponse;
+import com.ali.mirsalari.wrench.controller.mapper.ServiceResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,14 +40,14 @@ public class ServiceController {
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
     @PostMapping(path = "/registerSubservice/{serviceName}")
-    public ResponseEntity<?> registerService(@Valid @PathVariable String serviceName) {
+    public ResponseEntity<?> registerService(@PathVariable String serviceName) {
         Service service = serviceService.saveServices(serviceName);
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
     @PutMapping(path = "updateSubservice/{id}")
-    public ResponseEntity<?> updateSubservice(@Valid
+    public ResponseEntity<?> updateSubservice(
                                        @PathVariable("id") Long id,
-                                       @RequestBody RegisterServiceRequest request) {
+                                       @Valid @RequestBody RegisterServiceRequest request) {
         Service service = serviceService.updateSubservice(
                 id,
                 request.name(),
@@ -57,7 +57,7 @@ public class ServiceController {
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
     @PutMapping(path = "updateService/{id}")
-    public ResponseEntity<?> updateService(@Valid
+    public ResponseEntity<?> updateService(
                                               @PathVariable("id") Long id,
                                               @RequestParam String name) {
         Service service = serviceService.updateService(
@@ -67,9 +67,9 @@ public class ServiceController {
     }
 
     @DeleteMapping(path = "{serviceId}")
-    public HttpStatus deleteService(@PathVariable("serviceId") Long serviceId) {
+    public ResponseEntity<?> deleteService(@PathVariable("serviceId") Long serviceId) {
         serviceService.remove(serviceId);
-        return HttpStatus.OK;
+        return ResponseEntity.ok(HttpStatus.OK);
     }
     @GetMapping("/findById/{id}")
     public ResponseEntity<ServiceResponse> findById(@PathVariable Long id) {

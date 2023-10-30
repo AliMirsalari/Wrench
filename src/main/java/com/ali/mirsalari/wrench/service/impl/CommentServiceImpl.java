@@ -46,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Comment uncheckedUpdate(Comment comment) {
+    public Comment updateWithEntity(Comment comment) {
         return commentRepository.save(comment);
     }
 
