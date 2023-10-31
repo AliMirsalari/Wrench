@@ -190,6 +190,4 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(()->new NotFoundException("No such an Order!"));
         return bid.getSuggestedPrice();
     }
-
-
 }

@@ -53,6 +53,9 @@ public class UserServiceImpl implements UserService {
             if (searchCriteria.maxScore() != null) {
                 predicate = builder.and(predicate, builder.lessThanOrEqualTo(root.get("score"), searchCriteria.maxScore()));
             }
+            if (searchCriteria.expertStatus() != null) {
+                predicate = builder.and(predicate, builder.equal(root.get("expertStatus"), searchCriteria.expertStatus()));
+            }
         }
 
         query.where(predicate);

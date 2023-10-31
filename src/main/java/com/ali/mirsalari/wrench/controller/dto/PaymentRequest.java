@@ -1,26 +1,23 @@
 package com.ali.mirsalari.wrench.controller.dto;
 
 import jakarta.validation.constraints.*;
+import org.hibernate.validator.constraints.Range;
 
 public record PaymentRequest(
-        @NotBlank
         int captchaId,
-        @NotBlank
         Long orderId,
-        @NotBlank(message = "Credit card number is required")
         @Size(min = 16, max = 16, message = "Credit card number must be 16 digits long")
         @Pattern(regexp = "^\\d{16}$", message = "Credit card number must be a 16-digit number")
         String cardNumber,
-        @NotBlank
         Long price,
-        @NotBlank(message = "CVV2 is required")
-        @Pattern(regexp = "^[0-9]{3,4}$", message = "CVV2 must be a 3 to 4-digit number")
+        @Digits(integer = 4, fraction = 0, message = "CVV2 must be a 3 or 4-digit number")
+        @Range(min = 100, max = 9999, message = "CVV2 must be between 100 and 9999")
         int cvv2,
-        @NotBlank(message = "Year is required")
-        @Pattern(regexp = "^(0[0-9]|[1-9][0-9])$", message = "Year must be a two-digit number between 00 and 99")
+        @Digits(integer = 2, fraction = 0, message = "Year must be a 2-digit number")
+        @Range(min = 0, max = 99, message = "Year must be between 00 and 99")
         int year,
-        @NotBlank(message = "Month is required")
-        @Pattern(regexp = "^(0[1-9]|1[0-2])$", message = "Month must be a two-digit number between 01 and 12")
+        @Digits(integer = 2, fraction = 0, message = "Month must be a 2-digit number")
+        @Range(min = 1, max = 12, message = "Month must be between 01 and 12")
         int month,
         @NotBlank(message = "Second password is required")
         String secondPassword,

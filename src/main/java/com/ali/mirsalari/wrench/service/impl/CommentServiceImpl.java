@@ -27,6 +27,8 @@ public class CommentServiceImpl implements CommentService {
     public Comment save(byte rate, String verdict, Long customerId, Long expertId) {
         Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new NotFoundException("Customer is not found!"));
         Expert expert = expertRepository.findById(expertId).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        expert.setScore(expert.getScore()+rate);
+        expertRepository.save(expert);
         Comment comment = new Comment(rate, verdict, customer, expert);
         return commentRepository.save(comment);
     }

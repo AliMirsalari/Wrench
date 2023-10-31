@@ -16,8 +16,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ServiceServiceImpl implements ServiceService {
     private final ServiceRepository serviceRepository;
-
-
     @Override
     public Service saveSubservice(String name, Long basePrice, String description, Long serviceParentId) {
         Service parentService = findById(serviceParentId).orElse(null);

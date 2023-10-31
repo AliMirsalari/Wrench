@@ -65,6 +65,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());
     }
+    @ExceptionHandler(DeactivatedAccountException.class)
+    public ResponseEntity<String> deactivatedAccountExceptionHandler(DeactivatedAccountException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());
+    }
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> illegalStateExceptionHandler(IllegalStateException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

@@ -4,10 +4,7 @@ import com.ali.mirsalari.wrench.entity.Bid;
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.entity.Order;
 import com.ali.mirsalari.wrench.entity.enumeration.OrderStatus;
-import com.ali.mirsalari.wrench.exception.DuplicateException;
-import com.ali.mirsalari.wrench.exception.NotFoundException;
-import com.ali.mirsalari.wrench.exception.NotValidPriceException;
-import com.ali.mirsalari.wrench.exception.NotValidTimeException;
+import com.ali.mirsalari.wrench.exception.*;
 import com.ali.mirsalari.wrench.repository.BidRepository;
 import com.ali.mirsalari.wrench.repository.ExpertRepository;
 import com.ali.mirsalari.wrench.repository.OrderRepository;
@@ -31,6 +28,9 @@ public class BidServiceImpl implements BidService {
     @Override
     public Bid save(Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId) {
         Expert expert = expertRepository.findById(expertId).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        if (expert.getScore()<0){
+            throw new DeactivatedAccountException("Account is deactivated due to score less than zero!");
+        }
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!" ));
         validation(suggestedPrice, startTime, expert, order);
         Bid bid = new Bid(suggestedPrice, startTime, endTime, expert, order);
@@ -42,25 +42,12 @@ public class BidServiceImpl implements BidService {
         return bid;
     }
 
-    private static void validation(Long suggestedPrice, Instant startTime, Expert expert, Order order) {
-        if (!expert.getSkills().contains(order.getService())){
-            throw new IllegalArgumentException("You can not place a bid in this category!");
-        }
-        if (!(order.getOrderStatus().equals(OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS) ||
-                order.getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SELECTION))) {
-            throw new IllegalArgumentException("You cannot place a bid in this order!");
-        }
-        if (suggestedPrice < order.getService().getBasePrice()) {
-            throw new NotValidPriceException("Invalid price!");
-        }
-        if (startTime.isBefore(Instant.now().minusSeconds(5))) {
-            throw new NotValidTimeException("Bid's starting time cannot be in the past.");
-        }
-    }
-
     @Override
     public Bid update(Long id, Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId) {
         Expert expert = expertRepository.findById(expertId).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        if (expert.getScore()<0){
+            throw new DeactivatedAccountException("Account is deactivated due to score less than zero!");
+        }
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!" ));
         validation(suggestedPrice, startTime, expert, order);
         if (id == null || bidRepository.findById(id).isEmpty()) {
@@ -76,11 +63,11 @@ public class BidServiceImpl implements BidService {
                         order
         ));
     }
+
     @Override
     public Bid updateWithEntity(Bid bid) {
         return bidRepository.save(bid);
     }
-
     @Override
     public void remove(Long id) {
         bidRepository.deleteById(id);
@@ -107,6 +94,7 @@ public class BidServiceImpl implements BidService {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
         return bidRepository.findRelatedBidsOrderByPriceDesc(order);
     }
+
     @Override
     public List<Bid> findRelatedBidsOrderByScoreAsc(Long orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
@@ -117,7 +105,6 @@ public class BidServiceImpl implements BidService {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
         return bidRepository.findRelatedBidsOrderByScoreDesc(order);
     }
-
     @Override
     public void selectBid(Long bidId) {
         Bid bid = findById(bidId).orElseThrow(()-> new NotFoundException("Bid is not found!"));
@@ -134,5 +121,21 @@ public class BidServiceImpl implements BidService {
     public Optional<Bid> findSelectedBid(Long orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
         return bidRepository.findSelectedBid(order);
+    }
+
+    private static void validation(Long suggestedPrice, Instant startTime, Expert expert, Order order) {
+        if (!expert.getSkills().contains(order.getService())){
+            throw new IllegalArgumentException("You can not place a bid in this category!");
+        }
+        if (!(order.getOrderStatus().equals(OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS) ||
+                order.getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SELECTION))) {
+            throw new IllegalArgumentException("You cannot place a bid in this order!");
+        }
+        if (suggestedPrice < order.getService().getBasePrice()) {
+            throw new NotValidPriceException("Invalid price!");
+        }
+        if (startTime.isBefore(Instant.now().minusSeconds(5))) {
+            throw new NotValidTimeException("Bid's starting time cannot be in the past.");
+        }
     }
 }

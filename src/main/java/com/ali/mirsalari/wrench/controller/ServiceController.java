@@ -39,7 +39,7 @@ public class ServiceController {
                 request.serviceParentId());
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
-    @PostMapping(path = "/registerSubservice/{serviceName}")
+    @PostMapping(path = "/registerService/{serviceName}")
     public ResponseEntity<?> registerService(@PathVariable String serviceName) {
         Service service = serviceService.saveServices(serviceName);
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));

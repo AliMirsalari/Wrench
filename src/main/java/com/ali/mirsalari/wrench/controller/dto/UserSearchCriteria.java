@@ -1,5 +1,7 @@
 package com.ali.mirsalari.wrench.controller.dto;
 
+import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
+
 import java.util.List;
 
 public record UserSearchCriteria(
@@ -9,5 +11,6 @@ public record UserSearchCriteria(
     String email,
     List<Long> skillsId,
     Integer minScore,
-    Integer maxScore
+    Integer maxScore,
+    ExpertStatus expertStatus
 ) { }
