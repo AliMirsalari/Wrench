@@ -5,6 +5,7 @@ import com.ali.mirsalari.wrench.controller.mapper.ExpertResponseMapper;
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.service.ExpertService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -102,5 +103,18 @@ public class ExpertController {
     public ResponseEntity<String> savePhotoToFile(@Valid @RequestBody ImageRequest imageRequest) {
         expertService.retrieveAndSavePhotoToFile(imageRequest.expertId(), imageRequest.filePath());
         return ResponseEntity.ok("Photo has been saved to " + imageRequest.filePath());
+    }
+    @PostMapping("sendActivationLink/{email}")
+    public ResponseEntity<String> sendActivationLink(
+            @Valid @Email @PathVariable("email") String email){
+        expertService.sendActivationLink(email);
+        return ResponseEntity.ok("Activation link is sent!");
+    }
+    @GetMapping("approveEmail/{email}/{token}")
+    public ResponseEntity<String> approveEmail(
+            @Valid @Email @PathVariable("email") String email,
+            @PathVariable("token") String token){
+        expertService.approveEmail(email, token);
+        return ResponseEntity.ok("Email has been approved");
     }
 }

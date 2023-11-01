@@ -32,4 +32,8 @@ public interface ExpertService
     void removeSkill(Long skillId, Long expertId);
 
     void retrieveAndSavePhotoToFile(Long expertId, String filePath);
+
+    void sendActivationLink(String email);
+
+    void approveEmail(String email, String token);
 }
