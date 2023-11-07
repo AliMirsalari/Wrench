@@ -15,6 +15,8 @@ import com.ali.mirsalari.wrench.service.ExpertService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,25 +32,27 @@ public class ExpertServiceImpl implements ExpertService {
     private final ImageRepository imageRepository;
     private final UnapprovedEmailRepository unapprovedEmailRepository;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Expert save(String firstName, String lastName, String email, String password, byte[] imageData){
-        Expert expert = new Expert(firstName, lastName, email, password, imageData);
+        Expert expert = new Expert(firstName, lastName, email, passwordEncoder.encode(password), imageData);
         return expertRepository.save(expert);
     }
 
     @Override
-    public Expert update(Long id, String firstName, String lastName, String email, String password, byte[] imageData) {
-        Expert expert = findById(id).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+    public Expert update(String firstName, String lastName, String email, String password, byte[] imageData, UserDetails userDetails) {
+        Expert expert = findByEmail(userDetails.getUsername()).orElseThrow(() -> new NotFoundException("Expert is not found!"));
         expert.setFirstName(firstName);
         expert.setLastName(lastName);
         expert.setEmail(email);
-        expert.setPassword(password);
+        expert.setPassword(passwordEncoder.encode(password));
         expert.setImageData(imageData);
         return expertRepository.save(expert);
     }
     @Override
     public Expert updateWithEntity(Expert expert) {
+        expert.setPassword(passwordEncoder.encode(expert.getPassword()));
         return  expertRepository.save(expert);
     }
 
@@ -73,13 +77,13 @@ public class ExpertServiceImpl implements ExpertService {
     }
 
     @Override
-    public Expert changePassword(String newPassword, String oldPassword, Long userId) {
-        Expert expert = expertRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Expert with ID " + userId + " is not found."));
+    public Expert changePassword(String newPassword, String oldPassword, String email) {
+        Expert expert = expertRepository.findExpertByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Expert with Email " + email + " is not found."));
         if (!Objects.equals(expert.getPassword(), oldPassword)) {
             throw new NotValidPasswordException("The entered password is not the same as the password!");
         }
-        expert.setPassword(newPassword);
+        expert.setPassword(passwordEncoder.encode(newPassword));
         return updateWithEntity(expert);
     }
 
@@ -143,7 +147,6 @@ public class ExpertServiceImpl implements ExpertService {
         unapprovedEmailRepository.save(unapprovedEmail);
         String url = "http://localhost:8080/api/v1/expert/approveEmail/"+email +"/" + token;
         emailService.sendSimpleMessage(email,url);
-
     }
 
     @Override

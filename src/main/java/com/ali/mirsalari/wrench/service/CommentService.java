@@ -8,13 +8,13 @@ import java.util.Optional;
 
 @Service
 public interface CommentService {
-    Comment save(byte rate, String verdict, Long customerId, Long expertId);
+    Comment save(byte rate, String verdict, Long expertId, String email);
 
-    Comment update(Long id, byte rate, String verdict, Long customerId, Long expertId);
+    Comment update(Long id, byte rate, String verdict, String email);
 
     Comment updateWithEntity(Comment comment);
 
-    void remove(Long id);
+    void remove(Long id, String email);
 
     Optional<Comment> findById(Long id);
 

@@ -7,6 +7,7 @@ import com.ali.mirsalari.wrench.controller.dto.UserSearchCriteria;
 import com.ali.mirsalari.wrench.controller.mapper.UserResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserResponseMapper userResponseMapper;
     private final UserService userService;
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponse>> searchUsers(@ModelAttribute UserSearchCriteria searchCriteria) {
         List<User> users = userService.searchUsers(searchCriteria);

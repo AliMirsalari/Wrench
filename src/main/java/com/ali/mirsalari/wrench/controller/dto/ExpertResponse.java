@@ -1,8 +1,6 @@
 package com.ali.mirsalari.wrench.controller.dto;
 
 import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 
 import java.io.Serializable;
 import java.util.List;

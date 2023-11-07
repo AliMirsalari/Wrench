@@ -44,6 +44,11 @@ public class User {
     @Column(name = "register_time")
     private Instant registerTime = Instant.now();
 
+    @Column(name = "user_type", insertable=false, updatable=false)
+    private String userType;
+
+    @Column(name = "is_active")
+    private boolean isActive = false;
     public User(String firstName, String lastName, String email, String password, Long credit) {
         this.firstName = firstName;
         this.lastName = lastName;

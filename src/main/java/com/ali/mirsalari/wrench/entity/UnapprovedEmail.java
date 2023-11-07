@@ -24,8 +24,7 @@ public class UnapprovedEmail {
     @Email
     @NotBlank
     @Column(
-            name = "email",
-            unique = true)
+            name = "email")
     private String email;
 
     @NotBlank

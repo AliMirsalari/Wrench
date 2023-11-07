@@ -2,6 +2,7 @@ package com.ali.mirsalari.wrench.service;
 
 import com.ali.mirsalari.wrench.entity.Admin;
 import com.ali.mirsalari.wrench.service.base.BaseUserService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,15 +16,15 @@ public interface AdminService
                String email,
                String password);
 
-    Admin update(Long id,
-                 String firstName,
+    Admin update(String firstName,
                  String lastName,
                  String email,
-                 String password);
+                 String password,
+                 UserDetails userDetails);
 
     Admin updateWithEntity(Admin admin);
 
-    void remove(Long id);
+    void remove(String Email);
 
     Optional<Admin> findById(Long id);
 

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,13 +24,15 @@ public class ServiceController {
     private final ServiceResponseMapper serviceResponseMapper;
     private final ServiceService serviceService;
 
-    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','EXPERT','CUSTOMER')")
+    @GetMapping({"","/"})
     public List<ServiceResponse> getServices() {
         List<Service> services = serviceService.findAll();
         return services.stream()
                 .map(serviceResponseMapper::toDto)
                 .collect(Collectors.toList());
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/registerSubservice")
     public ResponseEntity<?> registerSubservice(@Valid @RequestBody RegisterServiceRequest request) {
         Service service = serviceService.saveSubservice(
@@ -39,11 +42,13 @@ public class ServiceController {
                 request.serviceParentId());
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/registerService/{serviceName}")
     public ResponseEntity<?> registerService(@PathVariable String serviceName) {
         Service service = serviceService.saveServices(serviceName);
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "updateSubservice/{id}")
     public ResponseEntity<?> updateSubservice(
                                        @PathVariable("id") Long id,
@@ -56,6 +61,7 @@ public class ServiceController {
                 request.serviceParentId());
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "updateService/{id}")
     public ResponseEntity<?> updateService(
                                               @PathVariable("id") Long id,
@@ -65,12 +71,13 @@ public class ServiceController {
                 name);
         return ResponseEntity.ok(serviceResponseMapper.toDto(service));
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "{serviceId}")
     public ResponseEntity<?> deleteService(@PathVariable("serviceId") Long serviceId) {
         serviceService.remove(serviceId);
         return ResponseEntity.ok(HttpStatus.OK);
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<ServiceResponse> findById(@PathVariable Long id) {
         Optional<Service> service = serviceService.findById(id);
@@ -78,7 +85,7 @@ public class ServiceController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findAllServices")
     public List<ServiceResponse> findAllServices() {
         List<Service> services = serviceService.findAllServices();
@@ -86,6 +93,7 @@ public class ServiceController {
                 .map(serviceResponseMapper::toDto)
                 .collect(Collectors.toList());
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findAllSubservices")
     public List<ServiceResponse> findAllSubservices() {
         List<Service> services = serviceService.findAllSubservices();
@@ -93,6 +101,7 @@ public class ServiceController {
                 .map(serviceResponseMapper::toDto)
                 .collect(Collectors.toList());
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findByName/{name}")
     public ResponseEntity<ServiceResponse> findByName(@PathVariable String name) {
         Optional<Service> service = serviceService.findByName(name);
