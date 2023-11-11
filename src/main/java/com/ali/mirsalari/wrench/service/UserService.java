@@ -1,8 +1,7 @@
 package com.ali.mirsalari.wrench.service;
 
-import com.ali.mirsalari.wrench.entity.Admin;
-import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.controller.dto.response.UserSearchCriteriaResponse;
+import com.ali.mirsalari.wrench.entity.User;
 
 import java.util.List;
 

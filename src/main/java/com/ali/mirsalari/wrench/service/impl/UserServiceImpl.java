@@ -1,7 +1,6 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.controller.dto.response.UserSearchCriteriaResponse;
-import com.ali.mirsalari.wrench.entity.Admin;
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
