@@ -1,9 +1,6 @@
 package com.ali.mirsalari.wrench.service.impl;
 
 import com.ali.mirsalari.wrench.entity.Admin;
-import com.ali.mirsalari.wrench.exception.DuplicateException;
-import com.ali.mirsalari.wrench.exception.NotFoundException;
-import com.ali.mirsalari.wrench.exception.NotValidEmailException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
 import com.ali.mirsalari.wrench.repository.AdminRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,22 +9,33 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AdminServiceImplTest {
     @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
     private AdminRepository adminRepository;
+    @Mock
+    private UserDetails userDetails;
 
     @InjectMocks
     private AdminServiceImpl underTest;
-    Admin admin;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String password;
+    private Admin admin;
+    private String bcryptPassword;
 
     @BeforeEach
     void setUp() {
