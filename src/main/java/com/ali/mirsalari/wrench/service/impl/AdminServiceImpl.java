@@ -45,7 +45,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public Admin updateWithEntity(Admin admin) {
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
-        return  adminRepository.save(admin);
+        return adminRepository.save(admin);
     }
     @Override
     public void remove(String email) {
