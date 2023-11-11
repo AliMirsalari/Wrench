@@ -1,5 +1,6 @@
 package com.ali.mirsalari.wrench.controller;
 
+import com.ali.mirsalari.wrench.controller.dto.UpdateCommentRequest;
 import com.ali.mirsalari.wrench.entity.Comment;
 import com.ali.mirsalari.wrench.service.CommentService;
 import com.ali.mirsalari.wrench.controller.dto.CommentResponse;
@@ -9,6 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +26,8 @@ public class CommentController {
     private final CommentResponseMapper commentResponseMapper;
     private final CommentService commentService;
 
-    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping({"","/"})
     public List<CommentResponse> getComments() {
         List<Comment> comments = commentService.findAll();
         return comments.stream()
@@ -30,35 +35,41 @@ public class CommentController {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
-    public ResponseEntity<?> registerComment(@Valid @RequestBody RegisterCommentRequest request) {
+    public ResponseEntity<?> registerComment(@Valid @RequestBody RegisterCommentRequest request,
+                                             @AuthenticationPrincipal UserDetails userDetails) {
         Comment comment = commentService.save(request.rate(),
                 request.verdict(),
-                request.customerId(),
-                request.expertId());
+                request.expertId(),
+                userDetails.getUsername());
         return ResponseEntity.ok(commentResponseMapper.toDto(comment));
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping(path = "{id}")
     public ResponseEntity<?> updateComment(
             @PathVariable("id") Long id,
-            @Valid @RequestBody RegisterCommentRequest request) {
+            @Valid @RequestBody UpdateCommentRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
         Comment comment = commentService.update(
                 id,
                 request.rate(),
                 request.verdict(),
-                request.customerId(),
-                request.expertId()
+                userDetails.getUsername()
         );
         return ResponseEntity.ok(commentResponseMapper.toDto(comment));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     @DeleteMapping(path = "{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId) {
-        commentService.remove(commentId);
+    public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        commentService.remove(commentId, userDetails.getUsername());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<CommentResponse> findById(@PathVariable Long id) {
         Optional<Comment> comment = commentService.findById(id);
@@ -66,7 +77,7 @@ public class CommentController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER','EXPERT')")
     @GetMapping("/findCommentsByExpertId/{id}")
     public List<CommentResponse> findCommentsByExpertId(@PathVariable Long id) {
         List<Comment> comments = commentService.findCommentsByExpertId(id);

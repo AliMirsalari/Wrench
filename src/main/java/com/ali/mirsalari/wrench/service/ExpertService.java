@@ -2,6 +2,7 @@ package com.ali.mirsalari.wrench.service;
 
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.service.base.BaseUserService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface ExpertService
 
     Expert save(String firstName, String lastName, String email, String password, byte[] imageData);
 
-    Expert update(Long id, String firstName, String lastName, String email, String password, byte[] imageData);
+    Expert update(String firstName, String lastName, String email, String password, byte[] imageData, UserDetails userDetails);
 
     Expert updateWithEntity(Expert expert);
 
@@ -32,4 +33,8 @@ public interface ExpertService
     void removeSkill(Long skillId, Long expertId);
 
     void retrieveAndSavePhotoToFile(Long expertId, String filePath);
+
+    void sendActivationLink(String email);
+
+    void approveEmail(String email, String token);
 }

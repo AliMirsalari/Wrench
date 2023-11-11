@@ -12,11 +12,11 @@ public interface BidService{
     Bid save(Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId);
 
 
-    Bid update(Long id, Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId);
+    Bid update(Long id, Long suggestedPrice, Instant startTime, Instant endTime, Long orderId, String email);
 
     Bid updateWithEntity(Bid bid);
 
-    void remove(Long id);
+    void remove(Long id, String email);
 
     Optional<Bid> findById(Long id);
 

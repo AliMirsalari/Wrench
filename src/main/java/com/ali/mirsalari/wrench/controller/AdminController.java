@@ -10,8 +10,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,14 +30,15 @@ public class AdminController {
     private final AdminResponseMapper adminResponseMapper;
     private final AdminService adminService;
 
-    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping({"","/"})
     public List<AdminResponse> getAdmins() {
         List<Admin> admins = adminService.findAll();
         return admins.stream()
                 .map(adminResponseMapper::toDto)
                 .collect(Collectors.toList());
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterAdminRequest request) {
             Admin admin = adminService.save(
@@ -41,26 +49,29 @@ public class AdminController {
             return ResponseEntity.ok(adminResponseMapper.toDto(admin));
     }
 
-    @DeleteMapping(path = "{adminId}")
-    public ResponseEntity<?> deleteAdmin(@PathVariable("adminId") Long adminId) {
-        adminService.remove(adminId);
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(path = "/deleteAdmin")
+    public ResponseEntity<?> deleteAdmin(@AuthenticationPrincipal UserDetails userDetails) {
+        adminService.remove(userDetails.getUsername());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PutMapping(path = "{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(path = "/updateExpert")
     public ResponseEntity<?> updateAdmin(
-                                         @PathVariable("id") Long id,
-                                         @Valid @RequestBody RegisterAdminRequest request) {
+                                         @Valid @RequestBody RegisterAdminRequest request,
+                                         @AuthenticationPrincipal UserDetails userDetails) {
             Admin admin = adminService.update(
-                    id,
                     request.firstName(),
                     request.lastName(),
                     request.email(),
-                    request.password()
+                    request.password(),
+                    userDetails
             );
             return ResponseEntity.ok(adminResponseMapper.toDto(admin));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<AdminResponse> findById(@PathVariable Long id) {
         Optional<Admin> admin = adminService.findById(id);
@@ -69,7 +80,7 @@ public class AdminController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findByEmail/{email}")
     public ResponseEntity<AdminResponse> findByEmail(@PathVariable String email) {
         Optional<Admin> admin = adminService.findByEmail(email);
@@ -78,10 +89,36 @@ public class AdminController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    @PutMapping("/changePassword/{userId}")
-    public ResponseEntity<?> changePassword(@PathVariable Long userId, @Valid @RequestBody ChangePasswordRequest request) {
-            Admin admin = adminService.changePassword(request.newPassword(), request.oldPassword(), userId);
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetails userDetails,
+                                            @Valid @RequestBody ChangePasswordRequest request) {
+            Admin admin = adminService.changePassword(request.newPassword(), request.oldPassword(), userDetails.getUsername());
             return ResponseEntity.ok(adminResponseMapper.toDto(admin));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/getRegisterDate/{id}")
+    public ResponseEntity<String> getRegisterDate(@PathVariable Long id) {
+        Optional<Admin> adminOptional = adminService.findById(id);
+
+        return adminOptional.map(admin -> {
+            Instant registerTime = admin.getRegisterTime();
+            ZoneId zoneId = ZoneId.systemDefault();
+            ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(registerTime, zoneId);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(zoneId);
+            String formattedTime = formatter.format(zonedDateTime);
+
+            return ResponseEntity.ok(formattedTime);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/getCreditAmount")
+    public ResponseEntity<?> getCreditAmount(@AuthenticationPrincipal UserDetails userDetails) {
+        Optional<Admin> adminOptional = adminService.findByEmail(userDetails.getUsername());
+
+        return adminOptional.map(admin -> ResponseEntity.ok(admin.getCredit()))
+                .orElse(ResponseEntity.notFound().build());
     }
 }

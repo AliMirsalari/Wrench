@@ -4,5 +4,5 @@ import java.util.Optional;
 
 public interface BaseUserService<T, EMAIL>{
     Optional<T> findByEmail (EMAIL email);
-    T changePassword(String newPassword, String oldPassword, Long userId);
+    T changePassword(String newPassword, String oldPassword, String email);
 }

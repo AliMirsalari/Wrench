@@ -8,7 +8,6 @@ public record RegisterOrderRequest(
         Long suggestedPrice,
         @NotBlank
         String address,
-        Long serviceId,
-        Long customerId
+        Long serviceId
 ) {
 }
