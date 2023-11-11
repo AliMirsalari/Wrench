@@ -16,7 +16,7 @@ public interface CommentService {
 
     void remove(Long id, String email);
 
-    Optional<Comment> findById(Long id);
+    Comment findById(Long id);
 
     List<Comment> findAll();
 

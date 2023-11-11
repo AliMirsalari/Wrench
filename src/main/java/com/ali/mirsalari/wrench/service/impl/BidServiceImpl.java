@@ -7,10 +7,10 @@ import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.entity.enumeration.OrderStatus;
 import com.ali.mirsalari.wrench.exception.*;
 import com.ali.mirsalari.wrench.repository.BidRepository;
-import com.ali.mirsalari.wrench.repository.ExpertRepository;
-import com.ali.mirsalari.wrench.repository.OrderRepository;
 import com.ali.mirsalari.wrench.repository.UserRepository;
 import com.ali.mirsalari.wrench.service.BidService;
+import com.ali.mirsalari.wrench.service.ExpertService;
+import com.ali.mirsalari.wrench.service.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,38 +25,38 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BidServiceImpl implements BidService {
     private final BidRepository bidRepository;
-    private final ExpertRepository expertRepository;
-    private final OrderRepository orderRepository;
+    private final ExpertService expertService;
+    private final OrderService orderService;
     private final UserRepository userRepository;
 
     @Override
     public Bid save(Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId) {
-        Expert expert = expertRepository.findById(expertId).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Expert expert = expertService.findById(expertId);
         if (expert.getScore() < 0 || !expert.isActive()) {
             throw new DeactivatedAccountException("Account is deactivated due to score less than zero!");
         }
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         validation(suggestedPrice, startTime, expert, order);
         Bid bid = new Bid(suggestedPrice, startTime, endTime, expert, order);
         bidRepository.save(bid);
         if (order.getOrderStatus().equals(OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS)) {
             order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SELECTION);
-            orderRepository.save(order);
+            orderService.updateWithEntity(order);
         }
         return bid;
     }
 
     @Override
     public Bid update(Long id, Long suggestedPrice, Instant startTime, Instant endTime, Long orderId, String email) {
-        Expert expert = expertRepository.findExpertByEmail(email).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Expert expert = expertService.findByEmail(email);
         if (expert.getScore() < 0 || !expert.isActive()) {
             throw new DeactivatedAccountException("Account is deactivated due to score less than zero!");
         }
-        Bid bid = bidRepository.findById(id).orElseThrow(() -> new NotFoundException("Bid is not found!"));
+        Bid bid = findById(id);
         if (!expert.getBids().contains(bid)){
             throw new IllegalArgumentException("You can not remove this bid!");
         }
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         validation(suggestedPrice, startTime, expert, order);
         return bidRepository.save(
                 new Bid(
@@ -76,13 +76,14 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public void remove(Long id, String email) {
-        User user = userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User is not found!"));
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User is not found!"));
         if (Objects.equals(user.getUserType(), "ADMIN")) {
             bidRepository.deleteById(id);
             return;
         }
-        Bid bid = bidRepository.findById(id).orElseThrow(() -> new NotFoundException("Bid is not found!"));
-        Expert expert = expertRepository.findExpertByEmail(email).orElseThrow(() -> new NotFoundException("User is not found!"));
+        Bid bid = findById(id);
+        Expert expert = expertService.findByEmail(email);
         if (!expert.getBids().contains(bid)) {
             throw new IllegalStateException("You can not remove this Bid!");
         }
@@ -91,8 +92,9 @@ public class BidServiceImpl implements BidService {
 
 
     @Override
-    public Optional<Bid> findById(Long id) {
-        return bidRepository.findById(id);
+    public Bid findById(Long id) {
+        return bidRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Bid with ID " + id + " is not found!"));
     }
 
     @Override
@@ -102,43 +104,43 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public List<Bid> findRelatedBidsOrderByPriceAsc(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         return bidRepository.findRelatedBidsOrderByPriceAsc(order);
     }
 
     @Override
     public List<Bid> findRelatedBidsOrderByPriceDesc(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         return bidRepository.findRelatedBidsOrderByPriceDesc(order);
     }
 
     @Override
     public List<Bid> findRelatedBidsOrderByScoreAsc(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         return bidRepository.findRelatedBidsOrderByScoreAsc(order);
     }
 
     @Override
     public List<Bid> findRelatedBidsOrderByScoreDesc(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         return bidRepository.findRelatedBidsOrderByScoreDesc(order);
     }
 
     @Override
     public void selectBid(Long bidId) {
-        Bid bid = findById(bidId).orElseThrow(() -> new NotFoundException("Bid is not found!"));
+        Bid bid = findById(bidId);
         if (findSelectedBid(bid.getOrder().getId()).isPresent()) {
             throw new DuplicateException("You already have chosen a bid!");
         }
         bid.setSelectionDate(Instant.now());
         updateWithEntity(bid);
         bid.getOrder().setOrderStatus(OrderStatus.WAITING_FOR_THE_EXPERT_TO_COME_TO_YOUR_PLACE);
-        orderRepository.save(bid.getOrder());
+        orderService.updateWithEntity(bid.getOrder());
     }
 
     @Override
     public Optional<Bid> findSelectedBid(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = orderService.findById(orderId);
         return bidRepository.findSelectedBid(order);
     }
 

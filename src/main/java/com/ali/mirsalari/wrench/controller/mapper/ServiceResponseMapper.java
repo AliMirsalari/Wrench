@@ -1,6 +1,6 @@
 package com.ali.mirsalari.wrench.controller.mapper;
 
-import com.ali.mirsalari.wrench.controller.dto.ServiceResponse;
+import com.ali.mirsalari.wrench.controller.dto.response.ServiceResponse;
 import com.ali.mirsalari.wrench.entity.Service;
 import org.mapstruct.*;
 

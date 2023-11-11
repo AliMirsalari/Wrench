@@ -26,7 +26,7 @@ public interface AdminService
 
     void remove(String Email);
 
-    Optional<Admin> findById(Long id);
+    Admin findById(Long id);
 
     List<Admin> findAll();
 }

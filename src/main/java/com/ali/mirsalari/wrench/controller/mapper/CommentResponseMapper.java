@@ -1,7 +1,7 @@
 package com.ali.mirsalari.wrench.controller.mapper;
 
 import com.ali.mirsalari.wrench.entity.Comment;
-import com.ali.mirsalari.wrench.controller.dto.CommentResponse;
+import com.ali.mirsalari.wrench.controller.dto.response.CommentResponse;
 import org.mapstruct.*;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)

@@ -2,8 +2,8 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.service.UserService;
-import com.ali.mirsalari.wrench.controller.dto.UserResponse;
-import com.ali.mirsalari.wrench.controller.dto.UserSearchCriteria;
+import com.ali.mirsalari.wrench.controller.dto.response.UserResponse;
+import com.ali.mirsalari.wrench.controller.dto.response.UserSearchCriteriaResponse;
 import com.ali.mirsalari.wrench.controller.mapper.UserResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class UserController {
     private final UserService userService;
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
-    public ResponseEntity<List<UserResponse>> searchUsers(@ModelAttribute UserSearchCriteria searchCriteria) {
+    public ResponseEntity<List<UserResponse>> searchUsers(@ModelAttribute UserSearchCriteriaResponse searchCriteria) {
         List<User> users = userService.searchUsers(searchCriteria);
         return ResponseEntity.ok(users.stream()
                 .map(userResponseMapper::toDto)

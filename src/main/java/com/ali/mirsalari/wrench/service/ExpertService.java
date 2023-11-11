@@ -21,10 +21,9 @@ public interface ExpertService
 
     void remove(Long id);
 
-    Optional<Expert> findById(Long id);
+    Expert findById(Long id);
 
     List<Expert> findAll();
-
 
     void approveExpert(Long id);
 

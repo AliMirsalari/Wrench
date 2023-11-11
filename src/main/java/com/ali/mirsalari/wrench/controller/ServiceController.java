@@ -2,8 +2,8 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Service;
 import com.ali.mirsalari.wrench.service.ServiceService;
-import com.ali.mirsalari.wrench.controller.dto.RegisterServiceRequest;
-import com.ali.mirsalari.wrench.controller.dto.ServiceResponse;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterServiceRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.ServiceResponse;
 import com.ali.mirsalari.wrench.controller.mapper.ServiceResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +80,7 @@ public class ServiceController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<ServiceResponse> findById(@PathVariable Long id) {
-        Optional<Service> service = serviceService.findById(id);
+        Optional<Service> service = Optional.ofNullable(serviceService.findById(id));
         return service.map(serviceResponseMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

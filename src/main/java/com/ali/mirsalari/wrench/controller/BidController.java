@@ -2,8 +2,8 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Bid;
 import com.ali.mirsalari.wrench.service.BidService;
-import com.ali.mirsalari.wrench.controller.dto.BidResponse;
-import com.ali.mirsalari.wrench.controller.dto.RegisterBidRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.BidResponse;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterBidRequest;
 import com.ali.mirsalari.wrench.controller.mapper.BidResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +73,7 @@ public class BidController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<BidResponse> findById(@PathVariable Long id) {
-        Optional<Bid> bid = bidService.findById(id);
+        Optional<Bid> bid = Optional.ofNullable(bidService.findById(id));
         return bid.map(bidResponseMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

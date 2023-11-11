@@ -19,7 +19,7 @@ public interface CustomerService
 
     void remove(Long id);
 
-    Optional<Customer> findById(Long id);
+    Customer findById(Long id);
 
     List<Customer> findAll();
 }

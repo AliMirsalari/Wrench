@@ -1,10 +1,10 @@
 package com.ali.mirsalari.wrench.controller;
 
-import com.ali.mirsalari.wrench.controller.dto.UpdateCommentRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.UpdateCommentRequest;
 import com.ali.mirsalari.wrench.entity.Comment;
 import com.ali.mirsalari.wrench.service.CommentService;
-import com.ali.mirsalari.wrench.controller.dto.CommentResponse;
-import com.ali.mirsalari.wrench.controller.dto.RegisterCommentRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.CommentResponse;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterCommentRequest;
 import com.ali.mirsalari.wrench.controller.mapper.CommentResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -72,7 +72,7 @@ public class CommentController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<CommentResponse> findById(@PathVariable Long id) {
-        Optional<Comment> comment = commentService.findById(id);
+        Optional<Comment> comment = Optional.ofNullable(commentService.findById(id));
         return comment.map(commentResponseMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

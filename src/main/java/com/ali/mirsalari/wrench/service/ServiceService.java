@@ -22,15 +22,12 @@ public interface ServiceService {
 
     void remove(Long id);
 
-    Optional<Service> findById(Long id);
+    Service findById(Long id);
 
     List<Service> findAll();
 
-    @Transactional
     List<Service> findAllServices ();
-    @Transactional
     List<Service> findAllSubservices ();
-    @Transactional
     Optional<Service> findByName(String name);
 
 

@@ -8,10 +8,10 @@ import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
 import com.ali.mirsalari.wrench.repository.ExpertRepository;
 import com.ali.mirsalari.wrench.repository.ImageRepository;
-import com.ali.mirsalari.wrench.repository.ServiceRepository;
 import com.ali.mirsalari.wrench.repository.UnapprovedEmailRepository;
 import com.ali.mirsalari.wrench.service.EmailService;
 import com.ali.mirsalari.wrench.service.ExpertService;
+import com.ali.mirsalari.wrench.service.ServiceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -28,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ExpertServiceImpl implements ExpertService {
     private final ExpertRepository expertRepository;
-    private final ServiceRepository serviceRepository;
+    private final ServiceService serviceService;
     private final ImageRepository imageRepository;
     private final UnapprovedEmailRepository unapprovedEmailRepository;
     private final EmailService emailService;
@@ -42,7 +42,7 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     public Expert update(String firstName, String lastName, String email, String password, byte[] imageData, UserDetails userDetails) {
-        Expert expert = findByEmail(userDetails.getUsername()).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Expert expert = findByEmail(userDetails.getUsername());
         expert.setFirstName(firstName);
         expert.setLastName(lastName);
         expert.setEmail(email);
@@ -62,8 +62,9 @@ public class ExpertServiceImpl implements ExpertService {
     }
 
     @Override
-    public Optional<Expert> findById(Long id) {
-        return expertRepository.findById(id);
+    public Expert findById(Long id) {
+        return expertRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Expert with ID " + id + " is not found."));
     }
 
     @Override
@@ -72,14 +73,14 @@ public class ExpertServiceImpl implements ExpertService {
     }
 
     @Override
-    public Optional<Expert> findByEmail(String email) {
-        return expertRepository.findExpertByEmail(email);
+    public Expert findByEmail(String email) {
+        return expertRepository.findExpertByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Expert with Email " + email + " is not found."));
     }
 
     @Override
     public Expert changePassword(String newPassword, String oldPassword, String email) {
-        Expert expert = expertRepository.findExpertByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Expert with Email " + email + " is not found."));
+        Expert expert = findByEmail(email);
         if (!Objects.equals(expert.getPassword(), oldPassword)) {
             throw new NotValidPasswordException("The entered password is not the same as the password!");
         }
@@ -89,15 +90,15 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     public void approveExpert(Long id) {
-        Expert expert = findById(id).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Expert expert = findById(id);
         expert.setExpertStatus(ExpertStatus.CONFIRMED);
         updateWithEntity(expert);
     }
 
     @Override
     public void addSkill(Long skillId, Long expertId) {
-        Service skill = serviceRepository.findById(skillId).orElseThrow(()-> new NotFoundException("Skill is not found!"));
-        Expert expert = findById(expertId).orElseThrow(()->new NotFoundException("Expert is not found!"));
+        Service skill = serviceService.findById(skillId);
+        Expert expert = findById(expertId);
         expert.getSkills().add(skill);
         expertRepository.save(expert);
     }
@@ -105,8 +106,8 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     public void removeSkill(Long skillId, Long expertId){
-        Service skill = serviceRepository.findById(skillId).orElseThrow(()-> new NotFoundException("Skill is not found!"));
-        Expert expert = findById(expertId).orElseThrow(()->new NotFoundException("Expert is not found!"));
+        Service skill = serviceService.findById(skillId);
+        Expert expert = findById(expertId);
 
         if (!expert.getSkills().contains(skill)) {
             throw new NotFoundException("Skill is not found!");
@@ -117,7 +118,7 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     public void retrieveAndSavePhotoToFile(Long expertId, String filePath) {
-        Expert expert = findById(expertId).orElseThrow(()->new NotFoundException("Expert is not found!"));
+        Expert expert = findById(expertId);
          byte[] photoData = expert.getImageData();
             if (photoData != null) {
                     imageRepository.writePhotoToFile(filePath,photoData);
@@ -128,8 +129,7 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     public void sendActivationLink(String email) {
-        Expert expert = expertRepository.findExpertByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Email is not found!"));
+        Expert expert = findByEmail(email);
         if (expert.getExpertStatus() == ExpertStatus.CONFIRMED){
             throw new IllegalStateException("Expert is already confirmed!");
         }
@@ -161,8 +161,7 @@ public class ExpertServiceImpl implements ExpertService {
             throw new IllegalStateException("Activation link is expired, use another one!");
         }
         unapprovedEmailRepository.removeByEmail(email);
-        Expert expert = expertRepository.findExpertByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Expert expert = findByEmail(email);
         expert.setExpertStatus(ExpertStatus.AWAITING_CONFIRMATION);
         expertRepository.save(expert);
     }

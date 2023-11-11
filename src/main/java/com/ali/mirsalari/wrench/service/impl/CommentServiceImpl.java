@@ -6,41 +6,40 @@ import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.exception.NotFoundException;
 import com.ali.mirsalari.wrench.repository.CommentRepository;
-import com.ali.mirsalari.wrench.repository.CustomerRepository;
-import com.ali.mirsalari.wrench.repository.ExpertRepository;
-import com.ali.mirsalari.wrench.repository.UserRepository;
 import com.ali.mirsalari.wrench.service.CommentService;
+import com.ali.mirsalari.wrench.service.CustomerService;
+import com.ali.mirsalari.wrench.service.ExpertService;
+import com.ali.mirsalari.wrench.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final CustomerRepository customerRepository;
-    private final ExpertRepository expertRepository;
-    private final UserRepository userRepository;
+    private final CustomerService customerService;
+    private final ExpertService expertService;
+    private final UserService userService;
 
     @Override
     public Comment save(byte rate, String verdict, Long expertId, String email) {
-        Customer customer = customerRepository.findCustomerByEmail(email).orElseThrow(() -> new NotFoundException("Customer is not found!"));
-        Expert expert = expertRepository.findById(expertId).orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Customer customer = customerService.findByEmail(email);
+        Expert expert = expertService.findById(expertId);
         expert.setScore(expert.getScore()+rate);
-        expertRepository.save(expert);
+        expertService.updateWithEntity(expert);
         Comment comment = new Comment(rate, verdict, customer, expert);
         return commentRepository.save(comment);
     }
 
     @Override
     public Comment update(Long id, byte rate, String verdict, String email) {
-        Comment comment = findById(id).orElseThrow(() -> new NotFoundException("Comment is not found!"));
-        Customer customer = customerRepository.findCustomerByEmail(email).orElseThrow(() -> new NotFoundException("Customer is not found!"));
+        Comment comment = findById(id);
+        Customer customer = customerService.findByEmail(email);
         if (comment.getCustomer() == customer) {
             comment.setRate(rate);
             comment.setVerdict(verdict);
@@ -55,13 +54,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void remove(Long id, String email) {
-        User user = userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User is not found!"));
+        User user = userService.findByEmail(email);
         if (Objects.equals(user.getUserType(), "ADMIN")) {
             commentRepository.deleteById(id);
             return;
         }
-        Customer customer = customerRepository.findCustomerByEmail(email).orElseThrow(()-> new NotFoundException("Customer is not found!"));
-        Comment comment = commentRepository.findById(id).orElseThrow(()-> new NotFoundException("Comment is not found!"));
+        Customer customer = customerService.findByEmail(email);
+        Comment comment = findById(id);
         if (comment.getCustomer() != customer){
             throw new IllegalArgumentException("You can not remove this comment!");
         }
@@ -69,8 +68,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Optional<Comment> findById(Long id) {
-        return commentRepository.findById(id);
+    public Comment findById(Long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Comment with ID " + id + " is not found!"));
     }
 
     @Override

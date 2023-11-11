@@ -18,7 +18,7 @@ public interface BidService{
 
     void remove(Long id, String email);
 
-    Optional<Bid> findById(Long id);
+    Bid findById(Long id);
 
     List<Bid> findAll();
 

@@ -36,7 +36,7 @@ public class AdminServiceImpl implements AdminService {
                         String email,
                         String password,
                         UserDetails userDetails) {
-        Admin admin = findByEmail(userDetails.getUsername()).orElseThrow(()->new NotFoundException("Admin is not found!"));
+        Admin admin = findByEmail(userDetails.getUsername());
         admin.setFirstName(firstName);
         admin.setLastName(lastName);
         admin.setEmail(email);
@@ -54,13 +54,16 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Optional<Admin> findById(Long id) {
-        return adminRepository.findById(id);
+    public Admin findById(Long id) {
+        return adminRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Admin with ID " + id + " is not found."));
     }
 
     @Override
-    public Optional<Admin> findByEmail(String email) {
-        return adminRepository.findAdminByEmail(email);
+    public Admin findByEmail(String email) {
+        return adminRepository.findAdminByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Admin with Email " + email + " is not found."));
+
     }
 
 
@@ -71,8 +74,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Admin changePassword(String newPassword, String oldPassword, String email) {
-        Admin admin = adminRepository.findAdminByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Admin with ID " + email + " is not found."));
+        Admin admin = findByEmail(email);
         if (!Objects.equals(admin.getPassword(), oldPassword)) {
             throw new NotValidPasswordException("The entered password is not the same as the password!");
         }

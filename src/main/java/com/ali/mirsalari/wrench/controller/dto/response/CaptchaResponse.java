@@ -1,4 +1,4 @@
-package com.ali.mirsalari.wrench.controller.dto;
+package com.ali.mirsalari.wrench.controller.dto.response;
 
 public record CaptchaResponse(
             Integer id,

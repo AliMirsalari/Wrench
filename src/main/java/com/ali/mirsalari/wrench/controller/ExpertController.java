@@ -1,6 +1,10 @@
 package com.ali.mirsalari.wrench.controller;
 
-import com.ali.mirsalari.wrench.controller.dto.*;
+import com.ali.mirsalari.wrench.controller.dto.request.ChangePasswordRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.ImageRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterExpertRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.SkillRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.ExpertResponse;
 import com.ali.mirsalari.wrench.controller.mapper.ExpertResponseMapper;
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.service.ExpertService;
@@ -20,6 +24,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -82,14 +87,14 @@ public class ExpertController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<ExpertResponse> findById(@PathVariable Long id) {
-        Optional<Expert> expert = expertService.findById(id);
+        Optional<Expert> expert = Optional.ofNullable(expertService.findById(id));
         return expert.map(expertResponseMapper::toDto).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findByEmail/{email}")
     public ResponseEntity<ExpertResponse> findByEmail(@PathVariable String email) {
-        Optional<Expert> expert = expertService.findByEmail(email);
+        Optional<Expert> expert = Optional.ofNullable(expertService.findByEmail(email));
         return expert.map(expertResponseMapper::toDto).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
@@ -104,6 +109,9 @@ public class ExpertController {
     @PutMapping("/changePassword")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetails userDetails,
                                             @Valid @RequestBody ChangePasswordRequest request) {
+        if (!Objects.equals(request.newPassword(), request.confirmNewPassword())){
+            throw new  IllegalArgumentException("Passwords must be the same!");
+        }
         Expert expert =
                 expertService
                         .changePassword(
@@ -151,7 +159,7 @@ public class ExpertController {
     @PreAuthorize("hasAnyRole('ADMIN','EXPERT')")
     @GetMapping("/getRegisterDate/{id}")
     public ResponseEntity<String> getRegisterDate(@PathVariable Long id) {
-        Optional<Expert> expertOptional = expertService.findById(id);
+        Optional<Expert> expertOptional = Optional.ofNullable(expertService.findById(id));
 
         return expertOptional.map(expert -> {
             Instant registerTime = expert.getRegisterTime();
@@ -167,7 +175,7 @@ public class ExpertController {
     @PreAuthorize("hasRole('EXPERT')")
     @GetMapping("/getCreditAmount")
     public ResponseEntity<?> getCreditAmount(@AuthenticationPrincipal UserDetails userDetails) {
-        Optional<Expert> expertOptional = expertService.findByEmail(userDetails.getUsername());
+        Optional<Expert> expertOptional = Optional.ofNullable(expertService.findByEmail(userDetails.getUsername()));
 
         return expertOptional.map(expert -> ResponseEntity.ok(expert.getCredit()))
                 .orElse(ResponseEntity.notFound().build());

@@ -1,6 +1,6 @@
 package com.ali.mirsalari.wrench.exception.handler;
 
-import com.ali.mirsalari.wrench.controller.dto.ErrorResponse;
+import com.ali.mirsalari.wrench.controller.dto.response.ErrorResponse;
 import com.ali.mirsalari.wrench.exception.*;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

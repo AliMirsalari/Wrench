@@ -1,25 +1,31 @@
 package com.ali.mirsalari.wrench.service.impl;
 
-import com.ali.mirsalari.wrench.controller.dto.UserSearchCriteria;
+import com.ali.mirsalari.wrench.controller.dto.response.UserSearchCriteriaResponse;
+import com.ali.mirsalari.wrench.entity.Admin;
 import com.ali.mirsalari.wrench.entity.Expert;
 import com.ali.mirsalari.wrench.entity.User;
+import com.ali.mirsalari.wrench.exception.NotFoundException;
+import com.ali.mirsalari.wrench.repository.UserRepository;
 import com.ali.mirsalari.wrench.service.UserService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
+    private final UserRepository userRepository;
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
-    public List<User> searchUsers(UserSearchCriteria searchCriteria) {
+    public List<User> searchUsers(UserSearchCriteriaResponse searchCriteria) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<User> query = builder.createQuery(User.class);
         Root<User> root = query.from(User.class);
@@ -60,6 +66,13 @@ public class UserServiceImpl implements UserService {
 
         query.where(predicate);
         return entityManager.createQuery(query).getResultList();
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User with Email " + email + " is not found."));
+
     }
 
 }

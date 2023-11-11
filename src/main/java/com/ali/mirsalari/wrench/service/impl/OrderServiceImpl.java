@@ -7,7 +7,10 @@ import com.ali.mirsalari.wrench.exception.NotValidPriceException;
 import com.ali.mirsalari.wrench.exception.NotValidServiceException;
 import com.ali.mirsalari.wrench.exception.NotValidTimeException;
 import com.ali.mirsalari.wrench.repository.*;
+import com.ali.mirsalari.wrench.service.CustomerService;
+import com.ali.mirsalari.wrench.service.ExpertService;
 import com.ali.mirsalari.wrench.service.OrderService;
+import com.ali.mirsalari.wrench.service.ServiceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,20 +24,18 @@ import java.util.*;
 @Transactional
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
-    private final ExpertRepository expertRepository;
-    private final ServiceRepository serviceRepository;
+    private final ExpertService expertService;
+    private final ServiceService serviceService;
     private final BidRepository bidRepository;
-    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
     private final UserRepository userRepository;
 
     @Override
     public Order save(String description, Long suggestedPrice, String address, Long serviceId, String email) {
         com.ali.mirsalari.wrench.entity.Service service =
-                serviceRepository.findById(serviceId)
-                        .orElseThrow(() -> new NotFoundException("Service is not found!"));
-        Customer customer = customerRepository
-                .findCustomerByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Customer is not found!"));
+                serviceService.findById(serviceId);
+        Customer customer = customerService
+                .findByEmail(email);
         Order order = new Order(description, suggestedPrice, Instant.now(), address, service, customer);
         if (order.getService().getServiceParent() == null) {
             throw new NotValidServiceException("Invalid Service!");
@@ -54,12 +55,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order update(Long id, String description, Long suggestedPrice, String address, Long serviceId, String email) {
         com.ali.mirsalari.wrench.entity.Service service =
-                serviceRepository.findById(serviceId)
-                        .orElseThrow(() -> new NotFoundException("Service is not found!"));
-        Customer customer = customerRepository
-                .findCustomerByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Customer is not found!"));
-        Order order = findById(id).orElseThrow(() -> new NotFoundException("Order is not found!"));
+                serviceService.findById(serviceId);
+        Customer customer = customerService
+                .findByEmail(email);
+        Order order = findById(id);
         if (order.getCustomer() != customer) {
             throw new IllegalStateException("You can not edit this Order!");
         }
@@ -89,7 +88,8 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.deleteById(id);
             return;
         }
-        Customer customer = customerRepository.findCustomerByEmail(email).orElseThrow(() -> new IllegalStateException("Customer is not found!"));
+        Customer customer = customerService
+                .findByEmail(email);
         Order order = orderRepository.findById(id).orElseThrow(() -> new IllegalStateException("Order is not found!"));
         if (order.getCustomer() !=customer){
             throw new IllegalStateException("You can not remove this order!");
@@ -98,10 +98,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Optional<Order> findById(Long id) {
-
-        return orderRepository.findById(id);
-
+    public Order findById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order with ID " + id + " is not found!"));
     }
 
     @Override
@@ -112,9 +111,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> findRelatedOrders(Long expertId) {
-        Expert expert = expertRepository
-                .findById(expertId)
-                .orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        Expert expert = expertService
+                .findById(expertId);
 
         EnumSet<OrderStatus> orderStatuses =
                 EnumSet.of(
@@ -126,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void changeOrderStatusToStarted(Long orderId, Long bidId) {
-        Order order = findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = findById(orderId);
         Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new NotFoundException("Bid is not found!"));
 
         if (order.getOrderStatus() != OrderStatus.WAITING_FOR_THE_EXPERT_TO_COME_TO_YOUR_PLACE) {
@@ -141,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void changeOrderStatusToDone(Long orderId, Long bidId) {
-        Order order = findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = findById(orderId);
         Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new NotFoundException("Bid is not found!"));
 
         if (order.getOrderStatus() != OrderStatus.STARTED) {
@@ -154,24 +152,25 @@ public class OrderServiceImpl implements OrderService {
             int hoursBefore = (int) Duration.between(bid.getEndTime(), Instant.now()).toHours();
             int score = expert.getScore();
             expert.setScore((score - hoursBefore));
-            expertRepository.save(expert);
+            expertService.updateWithEntity(expert);
         }
         if (expert.getScore() < 0) {
             expert.setActive(false);
-            expertRepository.save(expert);
+            expertService.updateWithEntity(expert);
         }
     }
 
     @Override
     public void payWithCredit(Long orderId, String email) {
-        Order order = findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = findById(orderId);
         if (order.getOrderStatus() != OrderStatus.DONE) {
             throw new IllegalStateException("You can not change the order status");
         }
         Bid selectedBid = bidRepository.findSelectedBid(order).orElseThrow(() -> new NotFoundException("Bid is not found!"));
         Long price = selectedBid.getSuggestedPrice();
         Expert expert = selectedBid.getExpert();
-        Customer customer = customerRepository.findCustomerByEmail(email).orElseThrow(() -> new NotFoundException("Customer is not found!"));
+        Customer customer = customerService
+                .findByEmail(email);
         if (!Objects.equals(customer.getId(), order.getCustomer().getId())){
             throw new IllegalStateException("You can pay other people's orders!'");
         }
@@ -180,15 +179,15 @@ public class OrderServiceImpl implements OrderService {
         }
         customer.setCredit(customer.getCredit() - price);
         expert.setCredit(expert.getCredit() + price);
-        customerRepository.save(customer);
-        expertRepository.save(expert);
+        customerService.updateWithEntity(customer);
+        expertService.updateWithEntity(expert);
         order.setOrderStatus(OrderStatus.PAID);
         updateWithEntity(order);
     }
 
     @Override
     public void payOnline(Long orderId, Long price) {
-        Order order = findById(orderId).orElseThrow(() -> new NotFoundException("Order is not found!"));
+        Order order = findById(orderId);
         if (order.getOrderStatus() != OrderStatus.DONE) {
             throw new IllegalStateException("You can not change the order status");
         }
@@ -199,7 +198,7 @@ public class OrderServiceImpl implements OrderService {
         }
         Expert expert = selectedBid.getExpert();
         expert.setCredit((long) (expert.getCredit() + (price * 0.7)));
-        expertRepository.save(expert);
+        expertService.updateWithEntity(expert);
         order.setOrderStatus(OrderStatus.PAID);
         updateWithEntity(order);
     }
@@ -214,17 +213,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<Order> findOrderByCustomerIdAndStatus(Long customerId, OrderStatus orderStatus) {
-        customerRepository
-                .findById(customerId)
-                .orElseThrow(() -> new NotFoundException("Customer is not found!"));
+        customerService
+                .findById(customerId);
         return orderRepository.findOrderByCustomerIdAndStatus(customerId, orderStatus);
     }
 
     @Override
     public List<Order> findOrderByExpertId(Long expertId) {
-        expertRepository
-                .findById(expertId)
-                .orElseThrow(() -> new NotFoundException("Expert is not found!"));
+        expertService
+                .findById(expertId);
         return orderRepository.findOrderByExpertId(expertId);
     }
 
@@ -258,20 +255,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> findCustomerOrders(String email) {
-        Customer customer = customerRepository.findCustomerByEmail(email).orElseThrow(() -> new NotFoundException("Customer is not found!"));
+        Customer customer = customerService
+                .findByEmail(email);
         return orderRepository.findOrderByCustomerId(customer.getId());
     }
     public List<Order> findCustomerOrdersByOrderStatus(String email, OrderStatus orderStatus) {
-        Customer customer = customerRepository
-                .findCustomerByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Customer is not found!"));
+        Customer customer = customerService
+                .findByEmail(email);
         return orderRepository.findCustomerOrdersByOrderStatus(customer.getId(), orderStatus);
     }
 
     public List<Order> findExpertOrdersByOrderStatus(String email, OrderStatus orderStatus) {
-       Expert expert = expertRepository
-                .findExpertByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Customer is not found!"));
+       Expert expert = expertService
+                .findByEmail(email);
         return orderRepository.findExpertOrdersByOrderStatus(expert.getId(), orderStatus);
     }
 }

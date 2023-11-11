@@ -1,8 +1,8 @@
 package com.ali.mirsalari.wrench.controller;
 
-import com.ali.mirsalari.wrench.controller.dto.ChangePasswordRequest;
-import com.ali.mirsalari.wrench.controller.dto.CustomerResponse;
-import com.ali.mirsalari.wrench.controller.dto.RegisterCustomerRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.ChangePasswordRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.CustomerResponse;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterCustomerRequest;
 import com.ali.mirsalari.wrench.controller.mapper.CustomerResponseMapper;
 import com.ali.mirsalari.wrench.entity.Customer;
 import com.ali.mirsalari.wrench.service.CustomerService;
@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,7 @@ public class CustomerController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
-        Optional<Customer> customer = customerService.findById(id);
+        Optional<Customer> customer = Optional.ofNullable(customerService.findById(id));
         return customer.map(customerResponseMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -82,7 +83,7 @@ public class CustomerController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findByEmail/{email}")
     public ResponseEntity<CustomerResponse> findByEmail(@PathVariable String email) {
-        Optional<Customer> customer = customerService.findByEmail(email);
+        Optional<Customer> customer = Optional.ofNullable(customerService.findByEmail(email));
         return customer.map(customerResponseMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -92,6 +93,9 @@ public class CustomerController {
     @PutMapping("/changePassword")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetails userDetails,
                                             @Valid @RequestBody ChangePasswordRequest request) {
+        if (!Objects.equals(request.newPassword(), request.confirmNewPassword())){
+            throw new  IllegalArgumentException("Passwords must be the same!");
+        }
         Customer customer = customerService.changePassword(request.newPassword(),
                 request.oldPassword(),
                 userDetails.getUsername());
@@ -100,7 +104,7 @@ public class CustomerController {
     @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
     @GetMapping("/getRegisterDate/{id}")
     public ResponseEntity<String> getRegisterDate(@PathVariable Long id) {
-        Optional<Customer> customerOptional = customerService.findById(id);
+        Optional<Customer> customerOptional = Optional.ofNullable(customerService.findById(id));
 
         return customerOptional.map(customer -> {
             Instant registerTime = customer.getRegisterTime();
@@ -117,7 +121,7 @@ public class CustomerController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/getCreditAmount")
     public ResponseEntity<?> getCreditAmount(@AuthenticationPrincipal UserDetails userDetails) {
-        Optional<Customer> customerOptional = customerService.findByEmail(userDetails.getUsername());
+        Optional<Customer> customerOptional = Optional.ofNullable(customerService.findByEmail(userDetails.getUsername()));
 
         return customerOptional.map(customer -> ResponseEntity.ok(customer.getCredit()))
                 .orElse(ResponseEntity.notFound().build());

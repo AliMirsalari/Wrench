@@ -3,7 +3,6 @@ package com.ali.mirsalari.wrench.entity;
 import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,7 +14,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Slf4j
 public class Expert extends User {
     @Column(name = "expert_status")
     @Enumerated(EnumType.STRING)

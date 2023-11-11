@@ -2,9 +2,9 @@ package com.ali.mirsalari.wrench.controller;
 
 import com.ali.mirsalari.wrench.entity.Admin;
 import com.ali.mirsalari.wrench.service.AdminService;
-import com.ali.mirsalari.wrench.controller.dto.AdminResponse;
-import com.ali.mirsalari.wrench.controller.dto.ChangePasswordRequest;
-import com.ali.mirsalari.wrench.controller.dto.RegisterAdminRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.AdminResponse;
+import com.ali.mirsalari.wrench.controller.dto.request.ChangePasswordRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterAdminRequest;
 import com.ali.mirsalari.wrench.controller.mapper.AdminResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -74,7 +75,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<AdminResponse> findById(@PathVariable Long id) {
-        Optional<Admin> admin = adminService.findById(id);
+        Optional<Admin> admin = Optional.ofNullable(adminService.findById(id));
 
         return admin.map(adminResponseMapper::toDto)
                 .map(ResponseEntity::ok)
@@ -83,7 +84,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findByEmail/{email}")
     public ResponseEntity<AdminResponse> findByEmail(@PathVariable String email) {
-        Optional<Admin> admin = adminService.findByEmail(email);
+        Optional<Admin> admin = Optional.ofNullable(adminService.findByEmail(email));
 
         return admin.map(adminResponseMapper::toDto)
                 .map(ResponseEntity::ok)
@@ -93,6 +94,9 @@ public class AdminController {
     @PutMapping("/changePassword")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetails userDetails,
                                             @Valid @RequestBody ChangePasswordRequest request) {
+            if (!Objects.equals(request.newPassword(), request.confirmNewPassword())){
+                throw new  IllegalArgumentException("Passwords must be the same!");
+            }
             Admin admin = adminService.changePassword(request.newPassword(), request.oldPassword(), userDetails.getUsername());
             return ResponseEntity.ok(adminResponseMapper.toDto(admin));
     }
@@ -100,7 +104,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getRegisterDate/{id}")
     public ResponseEntity<String> getRegisterDate(@PathVariable Long id) {
-        Optional<Admin> adminOptional = adminService.findById(id);
+        Optional<Admin> adminOptional = Optional.ofNullable(adminService.findById(id));
 
         return adminOptional.map(admin -> {
             Instant registerTime = admin.getRegisterTime();
@@ -116,7 +120,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getCreditAmount")
     public ResponseEntity<?> getCreditAmount(@AuthenticationPrincipal UserDetails userDetails) {
-        Optional<Admin> adminOptional = adminService.findByEmail(userDetails.getUsername());
+        Optional<Admin> adminOptional = Optional.ofNullable(adminService.findByEmail(userDetails.getUsername()));
 
         return adminOptional.map(admin -> ResponseEntity.ok(admin.getCredit()))
                 .orElse(ResponseEntity.notFound().build());

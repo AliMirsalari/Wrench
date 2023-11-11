@@ -1,7 +1,7 @@
 package com.ali.mirsalari.wrench.controller.mapper;
 
 import com.ali.mirsalari.wrench.entity.Admin;
-import com.ali.mirsalari.wrench.controller.dto.AdminResponse;
+import com.ali.mirsalari.wrench.controller.dto.response.AdminResponse;
 import org.mapstruct.*;
 import org.springframework.stereotype.Component;
 

@@ -1,10 +1,10 @@
-package com.ali.mirsalari.wrench.controller.dto;
+package com.ali.mirsalari.wrench.controller.dto.response;
 
 import com.ali.mirsalari.wrench.entity.enumeration.ExpertStatus;
 
 import java.util.List;
 
-public record UserSearchCriteria(
+public record UserSearchCriteriaResponse(
     String role,
     String firstName,
     String lastName,

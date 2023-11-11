@@ -1,6 +1,11 @@
 package com.ali.mirsalari.wrench.controller;
 
-import com.ali.mirsalari.wrench.controller.dto.*;
+import com.ali.mirsalari.wrench.controller.dto.request.ChangeOrderStatusRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.PaymentRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.RegisterOrderRequest;
+import com.ali.mirsalari.wrench.controller.dto.request.TimeRangeRequest;
+import com.ali.mirsalari.wrench.controller.dto.response.CaptchaResponse;
+import com.ali.mirsalari.wrench.controller.dto.response.OrderResponse;
 import com.ali.mirsalari.wrench.controller.mapper.OrderResponseMapper;
 import com.ali.mirsalari.wrench.entity.Order;
 import com.ali.mirsalari.wrench.entity.enumeration.OrderStatus;
@@ -85,7 +90,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
-        Optional<Order> order = orderService.findById(id);
+        Optional<Order> order = Optional.ofNullable(orderService.findById(id));
 
         return order.map(orderResponseMapper::toDto)
                 .map(ResponseEntity::ok)

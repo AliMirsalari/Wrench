@@ -1,11 +1,12 @@
-package com.ali.mirsalari.wrench.controller.dto;
+package com.ali.mirsalari.wrench.controller.dto.response;
 
 import java.io.Serializable;
 
 /**
- * DTO for {@link com.ali.mirsalari.wrench.entity.Customer}
+ * DTO for {@link com.ali.mirsalari.wrench.entity.Admin}
  */
-public record CustomerResponse(
+
+public record AdminResponse(
         Long id,
         String firstName,
         String lastName,

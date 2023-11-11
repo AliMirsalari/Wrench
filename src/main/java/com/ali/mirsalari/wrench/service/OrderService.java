@@ -17,7 +17,7 @@ public interface OrderService{
 
     void remove(Long id, String email);
 
-    Optional<Order> findById(Long id);
+    Order findById(Long id);
 
     List<Order> findAll();
 

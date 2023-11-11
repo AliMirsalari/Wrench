@@ -1,4 +1,4 @@
-package com.ali.mirsalari.wrench.controller.dto;
+package com.ali.mirsalari.wrench.controller.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

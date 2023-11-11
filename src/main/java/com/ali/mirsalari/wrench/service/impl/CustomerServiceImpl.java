@@ -29,7 +29,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer update(String firstName, String lastName, String email, String password, UserDetails userDetails) {
-        Customer customer = findByEmail(userDetails.getUsername()).orElseThrow(()->new NotFoundException("Customer is not found!"));
+        Customer customer = findByEmail(userDetails.getUsername());
         customer.setFirstName(firstName);
         customer.setLastName(lastName);
         customer.setEmail(email);
@@ -47,8 +47,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Optional<Customer> findById(Long id) {
-        return customerRepository.findById(id);
+    public Customer findById(Long id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Customer with ID " + id + " is not found."));
     }
 
     @Override
@@ -56,14 +57,14 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findAll();
     }
     @Override
-    public Optional<Customer> findByEmail(String email) {
-            return customerRepository.findCustomerByEmail(email);
+    public Customer findByEmail(String email) {
+            return customerRepository.findCustomerByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("Customer with Email " + email + " is not found."));
     }
 
     @Override
     public Customer changePassword(String newPassword, String oldPassword, String email) {
-        Customer customer = customerRepository.findCustomerByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Customer with ID " + email + " is not found."));
+        Customer customer = findByEmail(email);
         if (!Objects.equals(customer.getPassword(), oldPassword)) {
             throw new NotValidPasswordException("The entered password is not the same as the password!");
         }
