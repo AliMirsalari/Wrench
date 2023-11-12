@@ -7,10 +7,10 @@ import com.ali.mirsalari.wrench.entity.User;
 import com.ali.mirsalari.wrench.entity.enumeration.OrderStatus;
 import com.ali.mirsalari.wrench.exception.*;
 import com.ali.mirsalari.wrench.repository.BidRepository;
-import com.ali.mirsalari.wrench.repository.UserRepository;
 import com.ali.mirsalari.wrench.service.BidService;
 import com.ali.mirsalari.wrench.service.ExpertService;
 import com.ali.mirsalari.wrench.service.OrderService;
+import com.ali.mirsalari.wrench.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class BidServiceImpl implements BidService {
     private final BidRepository bidRepository;
     private final ExpertService expertService;
     private final OrderService orderService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public Bid save(Long suggestedPrice, Instant startTime, Instant endTime, Long expertId, Long orderId) {
@@ -76,8 +76,7 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public void remove(Long id, String email) {
-        User user = userRepository.findUserByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User is not found!"));
+        User user = userService.findByEmail(email);
         if (Objects.equals(user.getUserType(), "ADMIN")) {
             bidRepository.deleteById(id);
             return;
