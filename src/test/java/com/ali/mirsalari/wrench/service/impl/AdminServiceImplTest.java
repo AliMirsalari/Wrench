@@ -39,142 +39,113 @@ class AdminServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        admin = new Admin(
-                "Ahmad",
-                "Babaei",
-                "ahmad@gmail.com",
-                "df4s4654ASF$#%#",
-                0L,
-                Instant.now()
-        );
+        firstName = "Seyyed Ali";
+        lastName = "Mirsalari";
+        email = "alimirsalari@outlook.com";
+        password = "dfs456SDFS%#$";
+        bcryptPassword = "$2a$12$ATUfejDerhp2LeDLbp1lAO2Px0W5vduUM770NV1GIRcKx/5DaTNMa";
+        admin = new Admin(firstName, lastName, email, password);
     }
 
     @Test
-    void itShouldSaveAnAdmin() {
+    void itShouldSaveAdmin() {
         //Arrange
         when(adminRepository.save(any())).thenReturn(admin);
         //Act
-        Admin tempAdmin = underTest.save(admin);
+        Admin savedAdmin = underTest.save(firstName, lastName, email, password);
         //Assert
-        assertNotNull(tempAdmin);
+        assertNotNull(savedAdmin);
+        assertEquals(admin.getFirstName(), savedAdmin.getFirstName());
+        assertEquals(admin.getLastName(), savedAdmin.getLastName());
+        assertEquals(admin.getEmail(), savedAdmin.getEmail());
+        assertEquals(admin.getPassword(), savedAdmin.getPassword());
+        verify(adminRepository, times(1)).save(any());
     }
 
     @Test
-    void itShouldThrowEmailExistException() {
+    void itShouldUpdateAdmin() {
         //Arrange
-        when(adminRepository.findAdminByEmail(any())).thenReturn(Optional.ofNullable(admin));
-        //Act and Assert
-        assertThrows(DuplicateException.class,() ->{
-            underTest.save(admin);
-        });
+        admin.setId(1L);
+        when(userDetails.getUsername()).thenReturn(email);
+        when(adminRepository.findAdminByEmail(email)).thenReturn(Optional.ofNullable(admin));
+        when(passwordEncoder.encode(password)).thenReturn(bcryptPassword);
+        when(adminRepository.save(any())).thenReturn(admin);
+
+        String newFirstName = "Reza";
+        String newLastName = "Ahmadi";
+        String newEmail = "reza@gmail.com";
+
+        //Act
+        Admin updatedAdmin = underTest.update(newFirstName, newLastName, newEmail, password, userDetails);
+        //Assert
+        assertEquals(newFirstName, updatedAdmin.getFirstName());
+        assertEquals(newLastName, updatedAdmin.getLastName());
+        assertEquals(newEmail, updatedAdmin.getEmail());
+        assertEquals(bcryptPassword, updatedAdmin.getPassword());
     }
+
+    @Test
+    void itShouldUpdateAdminWithEntity() {
+        //Arrange
+        when(adminRepository.save(any())).thenReturn(admin);
+        //Act
+        underTest.updateWithEntity(admin);
+        //Assert
+        verify(passwordEncoder, times(1)).encode(any());
+    }
+
+    @Test
+    void itShouldRemoveAdmin() {
+        //Act
+        underTest.remove(any());
+        //Assert
+        verify(adminRepository, times(1)).deleteByEmail(any());
+    }
+
+    @Test
+    void itShouldFindAdminById() {
+        //Arrange
+        when(adminRepository.findById(any())).thenReturn(Optional.ofNullable(admin));
+        //Act
+        underTest.findById(any());
+        //Assert
+        verify(adminRepository, times(1)).findById(any());
+    }
+
+    @Test
+    void itShouldFindAllAdmins() {
+        //Arrange
+        when(adminRepository.findAll()).thenReturn(List.of(admin));
+        //Act
+        underTest.findAll();
+        //Assert
+        verify(adminRepository, times(1)).findAll();
+    }
+
     @Test
     void itShouldThrowNotValidPasswordException() {
-
-        admin.setPassword("AAAA");
-        //Act and Assert
-        assertThrows(NotValidPasswordException.class,() ->{
-            underTest.save(admin);
-        });
-    }
-    @Test
-    void itShouldThrowNotValidEmailException() {
-
-        admin.setEmail("AAAA");
-        //Act and Assert
-        assertThrows(NotValidEmailException.class,() ->{
-            underTest.save(admin);
-        });
-    }
-
-    @Test
-    void itShouldUpdateAnAdmin() {
-        //Arrange
-        when(adminRepository.save(any())).thenReturn(admin);
-        //Act
-        Admin tempAdmin = underTest.update(admin);
-        //Assert
-        assertNotNull(tempAdmin);
-    }
-    @Test
-    void itShouldUpdateAnAdminWithoutChecking() {
-        //Arrange
-        when(adminRepository.save(any())).thenReturn(admin);
-        //Act
-        Admin tempAdmin = underTest.uncheckedUpdate(admin);
-        //Assert
-        assertNotNull(tempAdmin);
-    }
-
-    @Test
-    void itShouldDeleteAdminById() {
-        //Act
-        underTest.remove(1L);
-        //Assert
-        verify(adminRepository, times(1)).deleteById(any());
-    }
-    @Test
-    void itShouldFindAnAdminById() {
-        //Arrange
-        when(adminRepository.findById(any())).thenReturn(Optional.ofNullable(admin));
-        //Act and Assert
-        if (underTest.findById(1L).isPresent()) {
-            Admin tempAdmin = underTest.findById(1L).get();
-            assertNotNull(tempAdmin);
-        }
-    }
-
-    @Test
-    void itShouldFindAnAdminByEmail() {
         //Arrange
         when(adminRepository.findAdminByEmail(any())).thenReturn(Optional.ofNullable(admin));
         //Act and Assert
-        if (underTest.findByEmail(admin.getEmail()).isPresent()) {
-            Admin tempAdmin = underTest.findByEmail(admin.getEmail()).get();
-            assertNotNull(tempAdmin);
-        }
+        assertThrows(NotValidPasswordException.class, () ->
+                underTest.changePassword(
+                        "d4fs4]56FSD%#",
+                        "456fdsf$^^$H",
+                        email));
     }
 
     @Test
-    void itShouldFindAdmins() {
+    void itShouldChangePassword() {
         //Arrange
-        when(adminRepository.findAll()).thenReturn(List.of(admin,admin,admin));
+        when(adminRepository.findAdminByEmail(any())).thenReturn(Optional.ofNullable(admin));
+        String newPassword = "456fdsf$^^$H";
         //Act
-        List<Admin> admins = underTest.findAll();
+        underTest.changePassword(newPassword,
+                password,
+                email);
         //Assert
-        assertNotNull(admins);
+        verify(adminRepository, times(1)).findAdminByEmail(email);
+        verify(passwordEncoder, times(1)).encode(newPassword);
+        verify(adminRepository, times(1)).save(admin);
     }
-
-    @Test
-    void itShouldThrowNotFoundException() {
-//        //Arrange
-        admin.setId(null);
-        //Act and Assert
-        assertThrows(NotFoundException.class, () -> {
-            underTest.changePassword(admin.getPassword(), admin);
-        });
-    }
-
-    @Test
-    void itShouldThrowNotValidPasswordExceptionWhenNewPasswordIsNotValid() {
-        //Arrange
-        when(adminRepository.findById(any())).thenReturn(Optional.ofNullable(admin));
-        admin.setId(1L);
-        //Act and Assert
-        assertThrows(NotValidPasswordException.class, () -> {
-            underTest.changePassword("aaaa", admin);
-        });
-    }
-    @Test
-    void itShouldChangeThePassword() {
-        //Arrange
-        when(adminRepository.findById(any())).thenReturn(Optional.ofNullable(admin));
-        admin.setId(1L);
-        //Act
-        String newPassword = "sdf54s]64SFDS%%#";
-        underTest.changePassword(newPassword, admin);
-//      Assert
-        assertEquals(newPassword, admin.getPassword());
-    }
-
 }
