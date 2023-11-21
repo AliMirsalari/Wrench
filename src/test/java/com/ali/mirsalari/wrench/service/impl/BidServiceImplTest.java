@@ -203,11 +203,7 @@ class BidServiceImplTest {
     void itShouldRemoveBidIfRequestIsFromAdmin() {
         //Arrange
         String email = "alimirsalari@outlook.com";
-        User user = new User("Seyyed Ali",
-                "Mirsalari",
-                email,
-                "45fsd%#HG",
-                100_000L);
+        User user = new User();
         user.setUserType("ADMIN");
         when(userService.findByEmail(any())).thenReturn(user);
         //Act
@@ -220,11 +216,7 @@ class BidServiceImplTest {
     void itShouldThrowIllegalStateExceptionWhileDeletingBid() {
         //Arrange
         String email = "alimirsalari@outlook.com";
-        User user = new User("Seyyed Ali",
-                "Mirsalari",
-                email,
-                "45fsd%#HG",
-                100_000L);
+        User user = new User();
         user.setUserType("EXPERT");
         when(userService.findByEmail(any())).thenReturn(user);
         when(bidRepository.findById(any())).thenReturn(Optional.ofNullable(bid));
@@ -237,11 +229,7 @@ class BidServiceImplTest {
     void itShouldRemoveBidIfRequestIsFromExpert() {
         //Arrange
         String email = "alimirsalari@outlook.com";
-        User user = new User("Seyyed Ali",
-                "Mirsalari",
-                email,
-                "45fsd%#HG",
-                100_000L);
+        User user = new User();
         user.setUserType("EXPERT");
         expert.setBids(Set.of(bid));
         when(userService.findByEmail(any())).thenReturn(user);

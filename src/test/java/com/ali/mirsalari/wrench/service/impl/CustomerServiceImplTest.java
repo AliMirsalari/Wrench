@@ -1,8 +1,10 @@
 package com.ali.mirsalari.wrench.service.impl;
 
-import com.ali.mirsalari.wrench.entity.Admin;
+import com.ali.mirsalari.wrench.entity.Customer;
+import com.ali.mirsalari.wrench.entity.Customer;
 import com.ali.mirsalari.wrench.exception.NotValidPasswordException;
-import com.ali.mirsalari.wrench.repository.AdminRepository;
+import com.ali.mirsalari.wrench.repository.CustomerRepository;
+import com.ali.mirsalari.wrench.repository.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,22 +22,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AdminServiceImplTest {
+class CustomerServiceImplTest {
+
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private AdminRepository adminRepository;
+    private CustomerRepository customerRepository;
     @Mock
     private UserDetails userDetails;
 
     @InjectMocks
-    private AdminServiceImpl underTest;
+    private CustomerServiceImpl underTest;
+
     private String firstName;
     private String lastName;
     private String email;
     private String password;
     private String bcryptPassword;
-    private Admin admin;
+    private Customer customer;
 
     @BeforeEach
     void setUp() {
@@ -44,88 +48,88 @@ class AdminServiceImplTest {
         email = "alimirsalari@outlook.com";
         password = "dfs456SDFS%#$";
         bcryptPassword = "$2a$12$ATUfejDerhp2LeDLbp1lAO2Px0W5vduUM770NV1GIRcKx/5DaTNMa";
-        admin = new Admin(firstName, lastName, email, password);
+        customer = new Customer(firstName, lastName, email, password);
     }
 
     @Test
-    void itShouldSaveAdmin() {
+    void itShouldSaveCustomer() {
         //Arrange
-        when(adminRepository.save(any())).thenReturn(admin);
+        when(customerRepository.save(any())).thenReturn(customer);
         //Act
-        Admin savedAdmin = underTest.save(firstName, lastName, email, password);
+        Customer savedCustomer = underTest.save(firstName, lastName, email, password);
         //Assert
-        assertNotNull(savedAdmin);
-        assertEquals(admin.getFirstName(), savedAdmin.getFirstName());
-        assertEquals(admin.getLastName(), savedAdmin.getLastName());
-        assertEquals(admin.getEmail(), savedAdmin.getEmail());
-        assertEquals(admin.getPassword(), savedAdmin.getPassword());
-        verify(adminRepository, times(1)).save(any());
+        assertNotNull(savedCustomer);
+        assertEquals(customer.getFirstName(), savedCustomer.getFirstName());
+        assertEquals(customer.getLastName(), savedCustomer.getLastName());
+        assertEquals(customer.getEmail(), savedCustomer.getEmail());
+        assertEquals(customer.getPassword(), savedCustomer.getPassword());
+        verify(customerRepository, times(1)).save(any());
     }
 
     @Test
-    void itShouldUpdateAdmin() {
+    void itShouldUpdateCustomer() {
         //Arrange
-        admin.setId(1L);
+        customer.setId(1L);
         when(userDetails.getUsername()).thenReturn(email);
-        when(adminRepository.findAdminByEmail(email)).thenReturn(Optional.ofNullable(admin));
+        when(customerRepository.findCustomerByEmail(email)).thenReturn(Optional.ofNullable(customer));
         when(passwordEncoder.encode(password)).thenReturn(bcryptPassword);
-        when(adminRepository.save(any())).thenReturn(admin);
+        when(customerRepository.save(any())).thenReturn(customer);
 
         String newFirstName = "Reza";
         String newLastName = "Ahmadi";
         String newEmail = "reza@gmail.com";
 
         //Act
-        Admin updatedAdmin = underTest.update(newFirstName, newLastName, newEmail, password, userDetails);
+        Customer updatedCustomer = underTest.update(newFirstName, newLastName, newEmail, password, userDetails);
         //Assert
-        assertEquals(newFirstName, updatedAdmin.getFirstName());
-        assertEquals(newLastName, updatedAdmin.getLastName());
-        assertEquals(newEmail, updatedAdmin.getEmail());
-        assertEquals(bcryptPassword, updatedAdmin.getPassword());
+        assertEquals(newFirstName, updatedCustomer.getFirstName());
+        assertEquals(newLastName, updatedCustomer.getLastName());
+        assertEquals(newEmail, updatedCustomer.getEmail());
+        assertEquals(bcryptPassword, updatedCustomer.getPassword());
     }
 
     @Test
-    void itShouldUpdateAdminWithEntity() {
+    void itShouldUpdateCustomerWithEntity() {
         //Arrange
-        when(adminRepository.save(any())).thenReturn(admin);
+        when(customerRepository.save(any())).thenReturn(customer);
         //Act
-        underTest.updateWithEntity(admin);
+        underTest.updateWithEntity(customer);
         //Assert
         verify(passwordEncoder, times(1)).encode(any());
     }
 
     @Test
-    void itShouldRemoveAdmin() {
+    void itShouldRemoveCustomer() {
         //Act
         underTest.remove(any());
         //Assert
-        verify(adminRepository, times(1)).deleteByEmail(any());
+        verify(customerRepository, times(1)).deleteById(any());
     }
 
     @Test
-    void itShouldFindAdminById() {
+    void itShouldFindCustomerById() {
         //Arrange
-        when(adminRepository.findById(any())).thenReturn(Optional.ofNullable(admin));
+        when(customerRepository.findById(any())).thenReturn(Optional.ofNullable(customer));
         //Act
         underTest.findById(any());
         //Assert
-        verify(adminRepository, times(1)).findById(any());
+        verify(customerRepository, times(1)).findById(any());
     }
 
     @Test
-    void itShouldFindAllAdmins() {
+    void itShouldFindAllCustomers() {
         //Arrange
-        when(adminRepository.findAll()).thenReturn(List.of(admin));
+        when(customerRepository.findAll()).thenReturn(List.of(customer));
         //Act
         underTest.findAll();
         //Assert
-        verify(adminRepository, times(1)).findAll();
+        verify(customerRepository, times(1)).findAll();
     }
 
     @Test
     void itShouldThrowNotValidPasswordException() {
         //Arrange
-        when(adminRepository.findAdminByEmail(any())).thenReturn(Optional.ofNullable(admin));
+        when(customerRepository.findCustomerByEmail(any())).thenReturn(Optional.ofNullable(customer));
         //Act and Assert
         assertThrows(NotValidPasswordException.class, () ->
                 underTest.changePassword(
@@ -137,15 +141,15 @@ class AdminServiceImplTest {
     @Test
     void itShouldChangePassword() {
         //Arrange
-        when(adminRepository.findAdminByEmail(any())).thenReturn(Optional.ofNullable(admin));
+        when(customerRepository.findCustomerByEmail(any())).thenReturn(Optional.ofNullable(customer));
         String newPassword = "456fdsf$^^$H";
         //Act
         underTest.changePassword(newPassword,
                 password,
                 email);
         //Assert
-        verify(adminRepository, times(1)).findAdminByEmail(email);
+        verify(customerRepository, times(1)).findCustomerByEmail(email);
         verify(passwordEncoder, times(1)).encode(newPassword);
-        verify(adminRepository, times(1)).save(admin);
+        verify(customerRepository, times(1)).save(customer);
     }
 }

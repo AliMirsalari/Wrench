@@ -19,9 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @org.springframework.stereotype.Service
 @Transactional
@@ -105,16 +103,19 @@ public class ExpertServiceImpl implements ExpertService {
 
 
     @Override
-    public void removeSkill(Long skillId, Long expertId){
+    public void removeSkill(Long skillId, Long expertId) {
         Service skill = serviceService.findById(skillId);
         Expert expert = findById(expertId);
-
         if (!expert.getSkills().contains(skill)) {
             throw new NotFoundException("Skill is not found!");
         }
-        expert.getSkills().remove(skill);
+        Set<Service> mutableSkills = new HashSet<>(expert.getSkills());
+        mutableSkills.remove(skill);
+        expert.setSkills(mutableSkills);
+
         expertRepository.save(expert);
     }
+
 
     @Override
     public void retrieveAndSavePhotoToFile(Long expertId, String filePath) {

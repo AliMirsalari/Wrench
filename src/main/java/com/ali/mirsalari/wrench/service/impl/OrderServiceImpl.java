@@ -34,18 +34,16 @@ public class OrderServiceImpl implements OrderService {
     public Order save(String description, Long suggestedPrice, String address, Long serviceId, String email) {
         com.ali.mirsalari.wrench.entity.Service service =
                 serviceService.findById(serviceId);
-        Customer customer = customerService
-                .findByEmail(email);
+        Customer customer = customerService.findByEmail(email);
         Order order = new Order(description, suggestedPrice, Instant.now(), address, service, customer);
-        if (order.getService().getServiceParent() == null) {
+        if (order.getService().getServiceParent() == null)
             throw new NotValidServiceException("Invalid Service!");
-        }
-        if (order.getSuggestedPrice() < order.getService().getBasePrice()) {
+
+        if (order.getSuggestedPrice() < order.getService().getBasePrice())
             throw new NotValidPriceException("Invalid price!");
-        }
-        if (order.getDateOfExecution().isBefore(Instant.now().minusSeconds(5))) {
+
+        if (order.getDateOfExecution().isBefore(Instant.now().minusSeconds(5)))
             throw new NotValidTimeException("Order execution date cannot be in the past.");
-        }
 
         order.setOrderStatus(OrderStatus.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS);
         return orderRepository.save(order);
@@ -59,20 +57,17 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = customerService
                 .findByEmail(email);
         Order order = findById(id);
-        if (order.getCustomer() != customer) {
+        if (order.getCustomer() != customer)
             throw new IllegalStateException("You can not edit this Order!");
-        }
         order.setDescription(description);
         order.setSuggestedPrice(suggestedPrice);
         order.setAddress(address);
         order.setService(service);
         order.setDateOfExecution(Instant.now());
-        if (order.getSuggestedPrice() < order.getService().getBasePrice()) {
+        if (order.getSuggestedPrice() < order.getService().getBasePrice())
             throw new NotValidPriceException("Invalid price!");
-        }
-        if (order.getDateOfExecution().isBefore(Instant.now().minusSeconds(5))) {
+        if (order.getDateOfExecution().isBefore(Instant.now().minusSeconds(5)))
             throw new NotValidTimeException("Order execution date cannot be in the past.");
-        }
         return orderRepository.save(order);
     }
 
@@ -83,17 +78,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void remove(Long id, String email) {
-        User user = userRepository.findUserByEmail(email).orElseThrow(() -> new IllegalStateException("User is not found!"));
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User is not found!"));
         if (Objects.equals(user.getUserType(), "ADMIN")) {
             orderRepository.deleteById(id);
             return;
         }
         Customer customer = customerService
                 .findByEmail(email);
-        Order order = orderRepository.findById(id).orElseThrow(() -> new IllegalStateException("Order is not found!"));
-        if (order.getCustomer() !=customer){
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Order is not found!"));
+        if (order.getCustomer() !=customer)
             throw new IllegalStateException("You can not remove this order!");
-        }
         orderRepository.deleteById(id);
     }
 
@@ -105,7 +101,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> findAll() {
-
         return orderRepository.findAll();
     }
 
@@ -127,12 +122,10 @@ public class OrderServiceImpl implements OrderService {
         Order order = findById(orderId);
         Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new NotFoundException("Bid is not found!"));
 
-        if (order.getOrderStatus() != OrderStatus.WAITING_FOR_THE_EXPERT_TO_COME_TO_YOUR_PLACE) {
+        if (order.getOrderStatus() != OrderStatus.WAITING_FOR_THE_EXPERT_TO_COME_TO_YOUR_PLACE)
             throw new IllegalStateException("You can not change the order status");
-        }
-        if (bid.getStartTime().isAfter(Instant.now().minusSeconds(5))) {
+        if (bid.getStartTime().isAfter(Instant.now().minusSeconds(5)))
             throw new NotValidTimeException("You can not start it before the suggested start time");
-        }
         order.setOrderStatus(OrderStatus.STARTED);
         updateWithEntity(order);
     }
@@ -142,9 +135,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = findById(orderId);
         Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new NotFoundException("Bid is not found!"));
 
-        if (order.getOrderStatus() != OrderStatus.STARTED) {
+        if (order.getOrderStatus() != OrderStatus.STARTED)
             throw new IllegalStateException("You can not change the order status");
-        }
         order.setOrderStatus(OrderStatus.DONE);
         updateWithEntity(order);
         Expert expert = bid.getExpert();
@@ -163,20 +155,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void payWithCredit(Long orderId, String email) {
         Order order = findById(orderId);
-        if (order.getOrderStatus() != OrderStatus.DONE) {
+        if (order.getOrderStatus() != OrderStatus.DONE)
             throw new IllegalStateException("You can not change the order status");
-        }
         Bid selectedBid = bidRepository.findSelectedBid(order).orElseThrow(() -> new NotFoundException("Bid is not found!"));
         Long price = selectedBid.getSuggestedPrice();
         Expert expert = selectedBid.getExpert();
         Customer customer = customerService
                 .findByEmail(email);
-        if (!Objects.equals(customer.getId(), order.getCustomer().getId())){
+        if (!Objects.equals(customer.getId(), order.getCustomer().getId()))
             throw new IllegalStateException("You can pay other people's orders!'");
-        }
-        if (customer.getCredit() < price) {
+        if (customer.getCredit() < price)
             throw new IllegalStateException("Credit is not enough to pay the order, please use another way!");
-        }
         customer.setCredit(customer.getCredit() - price);
         expert.setCredit(expert.getCredit() + price);
         customerService.updateWithEntity(customer);

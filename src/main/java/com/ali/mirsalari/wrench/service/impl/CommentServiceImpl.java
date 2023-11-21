@@ -62,7 +62,7 @@ public class CommentServiceImpl implements CommentService {
         Customer customer = customerService.findByEmail(email);
         Comment comment = findById(id);
         if (comment.getCustomer() != customer){
-            throw new IllegalArgumentException("You can not remove this comment!");
+            throw new IllegalStateException("You can not remove this comment!");
         }
         commentRepository.deleteById(id);
     }
