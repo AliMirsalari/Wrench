@@ -198,9 +198,7 @@ class ExpertServiceImplTest {
         when(serviceService.findById(any())).thenReturn(skill);
         when(expertRepository.findById(any())).thenReturn(Optional.ofNullable(expert));
         //Act and Assert
-        assertThrows(NotFoundException.class, ()->{
-            underTest.removeSkill(7L, 1L);
-        });
+        assertThrows(NotFoundException.class, ()-> underTest.removeSkill(7L, 1L));
     }
     @Test
     void itShouldRemoveSkill() {

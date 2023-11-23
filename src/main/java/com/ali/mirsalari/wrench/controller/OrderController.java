@@ -153,7 +153,6 @@ public class OrderController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','EXPERT','CUSTOMER')")
     @GetMapping("/getOrderPrice")
     public Long getOrderPrice(@RequestParam Long orderId){
         return orderService.getOrderPriceById(orderId);
